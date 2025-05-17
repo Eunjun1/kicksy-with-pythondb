@@ -59,6 +59,11 @@ dependencies:
   flutter_slidable: ^4.0.0
   #Simple Gesture Detector
   simple_gesture_detector: ^0.2.1
+  
+  http: ^1.4.0
+
+
+
 
 dev_dependencies:
   flutter_test:
