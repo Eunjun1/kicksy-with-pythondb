@@ -1,1 +1,1 @@
-# kicksy-with-pythondb
+# kicksy
