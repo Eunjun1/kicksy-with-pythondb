@@ -38,5 +38,18 @@ async def selectAll(model_name: str):
         return{"result":"Error"}
     
 
-#@router.post("/insert{model_name}")
-#async def insert(model_name: str=Form(...)):
+@router.post("/insert")
+async def insert(model_name:str=Form(...),img_num:int=Form(...),file:UploadFile=File(...)):
+    try:
+        img_data = await file.read()
+        conn = connect()
+        curs = conn.cursor()
+        sql = 'insert into image(model_name,img_num,image) values(%s,%s,%s)'
+        curs.execute(sql,(model_name,img_num,img_data))
+        conn.commit()
+        conn.close()
+        return {"result":"OK"}
+    except Exception as e:
+        print("Error : ",e)
+        return {"result":"Error"}
+    

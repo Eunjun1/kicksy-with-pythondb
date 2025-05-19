@@ -18,7 +18,7 @@ from orderying import router as orderying_router
 from request import router as request_router
 from store import router as store_router
 from user import router as user_router
-from management import router as management_router
+from managements import router as management_router
 
 
 
