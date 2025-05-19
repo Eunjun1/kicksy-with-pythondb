@@ -33,6 +33,7 @@ class _HqInsertState extends State<HqInsert> {
   late List<dynamic> images;
   late int modelNum;
   List modelList = [];
+  List maxint = [];
 
   @override
   void initState() {
@@ -54,11 +55,31 @@ class _HqInsertState extends State<HqInsert> {
   }
 
   getJSONData() async {
-    var response = await http.get(Uri.parse('http://127.0.0.1:8000/model'));
+    var response = await http.get(
+      Uri.parse('http://127.0.0.1:8000/model/selectAll'),
+    );
     modelList.clear();
     modelList.addAll(json.decode(utf8.decode(response.bodyBytes))['results']);
     setState(() {});
     print(modelList.length);
+  }
+
+  getJSONMax() async {
+    var response = await http.get(
+      Uri.parse('http://127.0.0.1:8000/model/selectMax'),
+    );
+    maxint.clear();
+    maxint.addAll(json.decode(utf8.decode(response.bodyBytes))['results']);
+    setState(() {});
+  }
+
+  getImage() async {
+    var response = await http.get(
+      Uri.parse('http://127.0.0.1:8000/model/selectAll'),
+    );
+    modelList.clear();
+    modelList.addAll(json.decode(utf8.decode(response.bodyBytes))['results']);
+    setState(() {});
   }
 
   @override
@@ -89,7 +110,7 @@ class _HqInsertState extends State<HqInsert> {
                           itemBuilder: (context, index) {
                             return Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Image.memory(images[index]),
+                              child: Image.file(File(images[index])),
                             );
                           },
                         ),
@@ -152,74 +173,72 @@ class _HqInsertState extends State<HqInsert> {
       return;
     } else {
       imageFile = XFile(pickedFile.path);
-      File imageFile1 = File(imageFile!.path);
-      Uint8List getImage = await imageFile1.readAsBytes();
-      images.add(getImage);
+      images.add(imageFile!.path);
       setState(() {});
     }
   }
 
   insertImageAndModel() async {
-    int lastImageNum = -1;
-
     // 1. 이미지 먼저 저장
+    var request = http.MultipartRequest(
+      "POST",
+      Uri.parse('http://127.0.0.1:8000/model/insert'),
+    );
+    request.fields['image_num'] = 0.toString();
+    request.fields['name'] = nameCT.text;
+    request.fields['category'] = categoryCT.text;
+    request.fields['company'] = companyCT.text;
+    request.fields['color'] = colorCT.text;
+    request.fields['saleprice'] = salepriceCT.text;
+
+    var res = await request.send();
+    if (res.statusCode == 200) {
+      Get.snackbar('완', '완');
+      getJSONData();
+    } else {
+      Get.snackbar('X', 'X');
+    }
+    setState(() {});
+
     for (int i = 0; i < images.length; i++) {
       var request = http.MultipartRequest(
-        "POST", 
+        "POST",
         Uri.parse('http://127.0.0.1:8000/image/insert'),
       );
       request.fields['model_name'] = nameCT.text;
       request.fields['img_num'] = i.toString();
-      
-      if(imageFile != null) {
-        request.files.add(await http.MultipartFile.fromBytes('file', images[i]));
+
+      if (imageFile != null) {
+        request.files.add(await http.MultipartFile.fromPath('file', images[i]));
       }
       var res = await request.send();
-      if(res.statusCode == 200){
-        lastImageNum = res.statusCode;
-      }else{
-      }
-    }
-
-    // 2. 이미지가 저장되었을 경우에만 모델 저장
-    if (lastImageNum != -1) {
-      var request = http.MultipartRequest(
-        "POST", 
-        Uri.parse('http://127.0.0.1:8000/model/insert'),
-      );
-      request.fields['image_num'] = 0.toString();
-      request.fields['name'] = nameCT.text;
-      request.fields['category'] = categoryCT.text;
-      request.fields['company'] = companyCT.text;
-      request.fields['color'] = colorCT.text;
-      request.fields['saleprice'] = salepriceCT.text;
-
-      var res = await request.send();
-      if(res.statusCode == 200){
-        Get.snackbar('완', '완');
-        getJSONData();
-      }else{
-        Get.snackbar('X', 'X');
-      }
-      setState(() {});
     }
   }
 
+  // 2. 이미지가 저장되었을 경우에만 모델 저장
+
   insertProduct() async {
-    for(int i = int.parse(minSizeCT.text); i<int.parse(maxSizeCT.text); i+=10){
+    await getJSONMax();
+    int max = maxint[0]['max'];
+
+    for (
+      int i = int.parse(minSizeCT.text);
+      i < int.parse(maxSizeCT.text);
+      i += 10
+    ) {
       var request = http.MultipartRequest(
-        "POST", 
+        "POST",
         Uri.parse('http://127.0.0.1:8000/product/insert'),
       );
-      request.fields['model_code'] = (modelList.length+1).toString();
+      request.fields['model_code'] = (max).toString();
       request.fields['size'] = i.toString();
       request.fields['maxstock'] = maxstockCT.text;
       request.fields['registration'] = DateTime.now().toString();
       var res = await request.send();
 
-      if(res.statusCode == 200){
+      if (res.statusCode == 200) {
         Get.snackbar('완', '완');
-      }else{
+      } else {
         Get.snackbar('X', 'X');
       }
       setState(() {});
