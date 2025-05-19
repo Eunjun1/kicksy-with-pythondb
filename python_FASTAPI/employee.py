@@ -6,13 +6,12 @@ router = APIRouter()
 
 def connect():
     return pymysql.connect(
-        host="192.168.50.4",
-        user = "team",
+        host="127.0.0.1",
+        user = "root",
         password="qwer1234",
         db="kicksy",
         charset="utf8",
     )
-
 
 
 @router.get("/{emp_code}")

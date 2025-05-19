@@ -6,8 +6,8 @@ router = APIRouter()
 
 def connect():
     return pymysql.connect(
-        host="192.168.50.4",
-        user = "team",
+        host="127.0.0.1",
+        user = "root",
         password="qwer1234",
         db="kicksy",
         charset="utf8",
@@ -39,18 +39,3 @@ async def selectModel(mod_code: int):
 
     result = [{"mod_code":row[0],"image_num":row[1],"name":row[2],"category":row[3],"company":row[4],"color":row[5],"saleprice":row[6]} for row in rows]
     return {'results':result}
-
-
-@router.post("/inset")
-async def insert(name:str=Form(...),category:str=Form(...),company:str=Form(...),color:str=Form(...),saleprice:int=Form(...)):
-    try:
-        conn = connect()
-        curs = conn.cursor()
-        sql = 'insert into model (image_num,name,category,company,color,saleprice) values (%s,%s,%s,%s,%s,%s)'
-        curs.execute(sql,(0,name,category,company,color,saleprice))
-        conn.commit()
-        conn.close()
-        return {"result":"OK"}
-    except Exception as e:
-            print("Error : ",e)
-            return {"result":"Error"}
