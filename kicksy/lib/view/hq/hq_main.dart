@@ -23,7 +23,11 @@ class _HqMainState extends State<HqMain> {
 
   late List<String> productList;
   List modelList = [];
-  var value = Get.arguments[0] ?? "__";
+  List employeeList = [];
+  List documentList = [];
+  List orderyingList = [];
+  var value = 1;
+  //= Get.arguments[0] ?? "__";
 
   ///
   late String dropDownValue;
@@ -33,12 +37,42 @@ class _HqMainState extends State<HqMain> {
     super.initState();
     productList = ['제품 목록', '발주 목록'];
     dropDownValue = productList[0];
+    getJSONDataModel();
+    getJSONDataOdy();
+    getJSONDateEmp();
   }
 
-  getJSONData() async {
-    var response = await http.get(Uri.parse('http://127.0.0.1:8000/model'));
+  getJSONDataModel() async {
+    var responseModel = await http.get(
+      Uri.parse('http://127.0.0.1:8000/model'),
+    );
     modelList.clear();
-    modelList.addAll(json.decode(utf8.decode(response.bodyBytes))['results']);
+    modelList.addAll(
+      json.decode(utf8.decode(responseModel.bodyBytes))['results'],
+    );
+
+    setState(() {});
+  }
+
+  getJSONDateEmp() async {
+    var responseEmp = await http.get(
+      Uri.parse('http://127.0.0.1:8000/employee/1'),
+    );
+    employeeList.clear();
+    employeeList.addAll(
+      json.decode(utf8.decode(responseEmp.bodyBytes))['results'],
+    );
+    setState(() {});
+  }
+
+  getJSONDataOdy() async {
+    var responseOdy = await http.get(
+      Uri.parse('http://127.0.0.1:8000/orderying'),
+    );
+    orderyingList.clear();
+    orderyingList.addAll(
+      json.decode(utf8.decode(responseOdy.bodyBytes))['results'],
+    );
     setState(() {});
   }
 
@@ -46,207 +80,187 @@ class _HqMainState extends State<HqMain> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: FutureBuilder(
-        future: handler.queryEmployee(value),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30),
-              child: Container(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Text(
-                            snapshot.data![0].division,
+      body:
+          modelList.isEmpty && orderyingList.isEmpty && employeeList.isEmpty
+              ? Center(child: CircularProgressIndicator())
+              : Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30),
+                child: Container(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Text(
+                              employeeList[0]['division'],
+                              style: TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            employeeList[0]['grade'],
                             style: TextStyle(
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ),
-                        Text(
-                          snapshot.data![0].grade,
-                          style: TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 50),
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 50),
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(children: [
                                 
                               ],
                             ),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: 250,
-                          child: DropdownButton(
-                            value: dropDownValue,
-                            items:
-                                productList.map<DropdownMenuItem<String>>((
-                                  String value,
-                                ) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Row(
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.fromLTRB(
-                                            0,
-                                            0,
-                                            150,
-                                            0,
-                                          ),
-                                          child: Text(value),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }).toList(),
-                            onChanged: (String? value) {
-                              dropDownValue = value!;
-                              setState(() {});
-                            },
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10),
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Get.to(HqRequestList(), arguments: [value]);
-                            },
-                            child: Text('주문내역'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Expanded(
-                      child:
-                          dropDownValue == '제품 목록'
-                              ? FutureBuilder(
-                                future: handler.queryModelwithImage(''),
-                                builder: (context, snapshot) {
-                                  if (snapshot.hasData) {
-                                    return ListView.builder(
-                                      itemCount: snapshot.data!.length,
-                                      itemBuilder: (context, index) {
-                                        return GestureDetector(
-                                          onTap: () {
-                                            Get.to(
-                                              HqModelDetail(),
-                                              arguments: [
-                                                snapshot
-                                                    .data![index]
-                                                    .model
-                                                    .name,
-                                                snapshot
-                                                    .data![index]
-                                                    .model
-                                                    .code,
-                                                snapshot.data![0].images.image,
-                                              ],
-                                            );
-                                          },
-                                          child: Card(
-                                            child: Row(
-                                              children: [
-                                                Image.memory(
-                                                  snapshot
-                                                      .data![index]
-                                                      .images
-                                                      .image,
-                                                  width: 100,
-                                                ),
-                                                Column(
-                                                  children: [
-                                                    Text(
-                                                      '모델명 : ${snapshot.data![index].model.name}',
-                                                    ),
-                                                    Text(
-                                                      '제조사 : ${snapshot.data![index].model.company}',
-                                                    ),
-                                                    Text(
-                                                      '가격 : ${snapshot.data![index].model.saleprice}',
-                                                    ),
-                                                  ],
-                                                ),
-                                                // FutureBuilder(
-                                                //   future: handler.queryRequestWithProductWithModel(snapshot.data![index].model.code!),
-                                                //   builder: (context, snapshot) {
-                                                //     if (snapshot.hasData){
-                                                //     return SizedBox(
-                                                //       width: 30,
-                                                //       height: 30,
-                                                //       child: Row(
-                                                //         children: [
-                                                //           Text(snapshot.data![0].request.count.toString()),
-                                                //           Text('/'),
-                                                //           Text(snapshot.data![0].product.maxstock.toString())
-                                                //         ],
-                                                //       ),
-                                                //     );
-                                                //   } else {
-                                                //     return CircularProgressIndicator();
-                                                //   }
-                                                // })
-                                              ],
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 250,
+                            child: DropdownButton(
+                              value: dropDownValue,
+                              items:
+                                  productList.map<DropdownMenuItem<String>>((
+                                    String value,
+                                  ) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Row(
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.fromLTRB(
+                                              0,
+                                              0,
+                                              150,
+                                              0,
                                             ),
+                                            child: Text(value),
                                           ),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                              onChanged: (String? value) {
+                                dropDownValue = value!;
+                                setState(() {});
+                              },
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Get.to(HqRequestList(), arguments: [value]);
+                              },
+                              child: Text('주문내역'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Expanded(
+                        child:
+                            dropDownValue == '제품 목록'
+                                ? ListView.builder(
+                                  itemCount: modelList.length,
+                                  itemBuilder: (context, index) {
+                                    return GestureDetector(
+                                      onTap: () {
+                                        Get.to(
+                                          HqModelDetail(),
+                                          arguments: [
+                                            modelList[index]["name"],
+                                            modelList[index]['mod_code'],
+                                            modelList[0]['image_num'],
+                                          ],
                                         );
                                       },
-                                    );
-                                  } else {
-                                    return Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  }
-                                },
-                              )
-                              : FutureBuilder(
-                                future: handler.queryOderyingWithDocument(),
-                                builder: (context, snapshot) {
-                                  if (snapshot.hasData) {
-                                    return Column(
-                                      children: [
-                                        Container(
-                                          height: 50,
-                                          width: 400,
-                                          color: Colors.yellow,
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
-                                            children: [
-                                              Text('발주 번호'),
-                                              Text('제목'),
-                                              Text('기안자'),
-                                              Text('날짜'),
-                                            ],
-                                          ),
+                                      child: Card(
+                                        child: Row(
+                                          children: [
+                                            Image.network(
+                                              "http://127.0.0.1:8000/image/view/name=${modelList[index]['name']}&img_num=0?t=${DateTime.now().millisecondsSinceEpoch}",
+                                              width: 100,
+                                            ),
+                                            Column(
+                                              children: [
+                                                Text(
+                                                  '모델명 : ${modelList[index]['name']}',
+                                                ),
+                                                Text(
+                                                  '제조사 : ${modelList[index]['company']}',
+                                                ),
+                                                Text(
+                                                  '가격 : ${modelList[index]['saleprice']}',
+                                                ),
+                                              ],
+                                            ),
+                                            // FutureBuilder(
+                                            //   future: handler.queryRequestWithProductWithModel(snapshot.data![index].model.code!),
+                                            //   builder: (context, snapshot) {
+                                            //     if (snapshot.hasData){
+                                            //     return SizedBox(
+                                            //       width: 30,
+                                            //       height: 30,
+                                            //       child: Row(
+                                            //         children: [
+                                            //           Text(snapshot.data![0].request.count.toString()),
+                                            //           Text('/'),
+                                            //           Text(snapshot.data![0].product.maxstock.toString())
+                                            //         ],
+                                            //       ),
+                                            //     );
+                                            //   } else {
+                                            //     return CircularProgressIndicator();
+                                            //   }
+                                            // })
+                                          ],
                                         ),
-                                        ListView.builder(
-                                          shrinkWrap: T,
-                                          itemCount: snapshot.data!.length,
-                                          itemBuilder: (context, index) {
-                                            return GestureDetector(
+                                      ),
+                                    );
+                                  },
+                                )
+                                : Column(
+                                  children: [
+                                    Container(
+                                      height: 50,
+                                      width: 400,
+                                      color: Colors.yellow,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          Text('발주 번호'),
+                                          Text('제목'),
+                                          Text('기안자'),
+                                          Text('날짜'),
+                                        ],
+                                      ),
+                                    ),
+                                    ListView.builder(
+                                      shrinkWrap: T,
+                                      itemCount: orderyingList.length,
+                                      itemBuilder: (context, index) {
+                                        getJSONDataDoc(
+                                          orderyingList[index]['doc_code'],
+                                        );
+                                        return documentList.isEmpty
+                                            ? Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            )
+                                            : GestureDetector(
                                               onTap:
                                                   () => Get.to(
                                                     () => HqDocument(),
                                                     arguments: [
-                                                      snapshot
-                                                          .data![index]
-                                                          .document
-                                                          .code,
+                                                      documentList[index]['code'],
                                                       value,
                                                     ],
                                                   )!.then(
@@ -259,29 +273,17 @@ class _HqMainState extends State<HqMain> {
                                                           .spaceAround,
                                                   children: [
                                                     Text(
-                                                      snapshot
-                                                          .data![index]
-                                                          .orderying
-                                                          .num
+                                                      orderyingList[index]['num']
                                                           .toString(),
                                                     ),
                                                     Text(
-                                                      snapshot
-                                                          .data![index]
-                                                          .document
-                                                          .title,
+                                                      documentList[index]['title'],
                                                     ),
                                                     Text(
-                                                      snapshot
-                                                          .data![index]
-                                                          .document
-                                                          .propser,
+                                                      documentList[index]['proposer'],
                                                     ),
                                                     Text(
-                                                      snapshot
-                                                          .data![index]
-                                                          .document
-                                                          .date
+                                                      documentList[index]['date']
                                                           .toString()
                                                           .substring(0, 10),
                                                     ),
@@ -289,27 +291,16 @@ class _HqMainState extends State<HqMain> {
                                                 ),
                                               ),
                                             );
-                                          },
-                                        ),
-                                      ],
-                                    );
-                                  } else {
-                                    return Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  }
-                                },
-                              ),
-                    ),
-                  ],
-                ), // FutureBuilder
+                                      },
+                                    ),
+                                  ],
+                                ),
+                      ),
+                    ],
+                  ), // FutureBuilder
+                ),
               ),
-            );
-          } else {
-            return Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
+
       floatingActionButton:
           dropDownValue == '제품 목록'
               ? IconButton(
@@ -329,9 +320,18 @@ class _HqMainState extends State<HqMain> {
     );
   }
 
+  getJSONDataDoc(int code) async {
+    var responseDoc = await http.get(
+      Uri.parse('http://127.0.0.1:8000/document/$code'),
+    );
+    documentList.clear();
+    documentList.addAll(
+      json.decode(utf8.decode(responseDoc.bodyBytes))['results'],
+    );
+    setState(() {});
+  }
+
   reloadData() async {
-    handler.queryModelwithImage('');
-    handler.queryOderyingWithDocument();
     setState(() {});
   }
 }

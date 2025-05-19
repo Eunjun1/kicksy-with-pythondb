@@ -63,18 +63,3 @@ async def insert(emp_code:int=Form(...),doc_code:int=Form(...),prod_code:int=For
 
 # ======================================
 
-@router.get("/ordering_with document")
-async def selectOdywihtDoc():
-    try:
-        conn = connect()
-        curs = conn.cursor()
-
-        curs.execute("select * from orderying o, document d where o.doc_code = d.doc_code")
-        rows = curs.fetchall()
-        conn.close()
-        return rows
-        result = [{"ody_num":row[0],"emp_code":row[1],"doc_code":row[2],"prod_code":row[3],"ody_type":row[4],"ody_date":row[5],"ody_count":row[6],"reject_reason":row[7]} for row in rows]
-        return {'results':result}
-    except Exception as e:
-        print("Error : ",e)
-        return {"result":"Error"}

@@ -17,12 +17,24 @@ def connect():
 
 
 
-@router.get("/{model_name}")
-async def selectAll(model_name: str):
+@router.get("/name={model_name}")
+async def selectMax(model_name: str):
+    
+        conn = connect()
+        curs = conn.cursor()
+        curs.execute("select img_num from image where model_name = %s",(model_name,))
+        rows = curs.fetchall()
+        conn.close()
+        result = [{"img_num":row[0]} for row in rows]
+        return {'results':result}
+
+
+@router.get("/view/name={model_name}&img_num={img_num}")
+async def selectOne(model_name: str, img_num: int):
     try: 
         conn = connect()
         curs = conn.cursor()
-        curs.execute("select image from image where model_name = %s and img_num = 1",(model_name,))
+        curs.execute("select image from image where model_name = %s and img_num = %s",(model_name,img_num,))
         rows = curs.fetchone()
         conn.close()
         if rows:
