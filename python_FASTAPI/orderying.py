@@ -15,15 +15,15 @@ def connect():
 
 
 
-@router.get("/{emp_code}")
-async def selectAll(emp_code : int):
+@router.get("/{ody_num}")
+async def selectAll(ody_num : int):
 
     conn = connect()
     curs = conn.cursor()
 
-    curs.execute("select * from employee where emp_code = %s",(emp_code,))
+    curs.execute("select * from orderying where ody_num = %s",(ody_num,))
     rows = curs.fetchall()
     conn.close()
 
-    result = [{"emp_code":row[0],"password":row[1],"division":row[2],"grade":row[3]} for row in rows]
+    result = [{"ody_num":row[0],"emp_code":row[1],"doc_code":row[2],"prod_code":row[3],"ody_type":row[4],"ody_date":row[5],"ody_count":row[6],"reject_reason":row[7]} for row in rows]
     return {'results':result}
