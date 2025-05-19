@@ -20,7 +20,7 @@ class HqMain extends StatefulWidget {
 
 class _HqMainState extends State<HqMain> {
   //property
-
+  DatabaseHandler handler = DatabaseHandler();
   late List<String> productList;
   List modelList = [];
   List employeeList = [];

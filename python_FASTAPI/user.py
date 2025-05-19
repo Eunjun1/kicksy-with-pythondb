@@ -47,15 +47,17 @@ async def insertUser(email : str = Form(...), password : str = Form(...), phone 
         return {'result' : 'Error'}
 
 @router.post("/update") 
-async def updateUser():
+async def updateUser(password : str = Form(...), phone : str = Form(...), address : str = Form(...), sex : str= Form(...), email : str=Form(...)):
     conn = connect()
     curs = conn.cursor()
+    
     try : 
         sql = "update user set password = %s, phone = %s, address = %s, sex = %s where email = %s"
         curs.execute(sql, ())
         conn.commit()
         conn.close()
         return {'result' : 'OK'}
+    
     except Exception as e:
         conn.close()
         print("Error : ", e)

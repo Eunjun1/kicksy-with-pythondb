@@ -41,7 +41,7 @@ async def selectModel(mod_code: int):
     return {'results':result}
 
 
-@router.post("/inset")
+@router.post("/insert")
 async def insert(name:str=Form(...),category:str=Form(...),company:str=Form(...),color:str=Form(...),saleprice:int=Form(...)):
     try:
         conn = connect()
