@@ -44,7 +44,7 @@ async def insert(model_name:str=Form(...),img_num:int=Form(...),file:UploadFile=
         img_data = await file.read()
         conn = connect()
         curs = conn.cursor()
-        sql = 'insert into image(model_name,img_num,image) values(%s,%s,%s)'
+        sql = 'insert into image(model_name,img_num,image) values (%s,%s,%s)'
         curs.execute(sql,(model_name,img_num,img_data))
         conn.commit()
         conn.close()
