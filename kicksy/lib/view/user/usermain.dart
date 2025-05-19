@@ -325,7 +325,6 @@ class _UsermainState extends State<Usermain> {
                                             searchname = '';
                                             searchCompany = '';
                                             setState(() {
-                                              selectedIndex = -1;
                                             });
                                             getModelWithImageJSONData(searchname, searchCompany);
                                           },

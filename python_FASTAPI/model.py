@@ -75,8 +75,8 @@ async def selectModel(name : str = '', company : str = ''):
     sql = """select * from kicksy.model as m
     join kicksy.image as i on  i.img_num = m.image_num and m.name = i.model_name 
     where m.name like %s and m.company like %s"""
-    search_name = f"%{name}%" if name else "%"
-    search_company = f"%{company}%" if company else "%"
+    search_name = f"%{name}%" if name != '' else "%"
+    search_company = f"%{company}%" if company != '' else "%"
     curs.execute(sql, (search_name,search_company))
     rows = curs.fetchall()
     conn.close()
