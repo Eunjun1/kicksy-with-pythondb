@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_connect/http/src/utils/utils.dart';
@@ -7,6 +9,7 @@ import 'package:kicksy/view/hq/hq_insert_order_document.dart';
 import 'package:kicksy/view/hq/hq_model_detail.dart';
 import 'package:kicksy/view/hq/hq_request_list.dart';
 import 'package:kicksy/vm/database_handler.dart';
+import 'package:http/http.dart' as http;
 
 class HqMain extends StatefulWidget {
   const HqMain({super.key});
@@ -17,8 +20,9 @@ class HqMain extends StatefulWidget {
 
 class _HqMainState extends State<HqMain> {
   //property
-  DatabaseHandler handler = DatabaseHandler();
+
   late List<String> productList;
+  List modelList = [];
   var value = Get.arguments[0] ?? "__";
 
   ///
@@ -29,6 +33,13 @@ class _HqMainState extends State<HqMain> {
     super.initState();
     productList = ['제품 목록', '발주 목록'];
     dropDownValue = productList[0];
+  }
+
+  getJSONData() async {
+    var response = await http.get(Uri.parse('http://127.0.0.1:8000/model'));
+    modelList.clear();
+    modelList.addAll(json.decode(utf8.decode(response.bodyBytes))['results']);
+    setState(() {});
   }
 
   @override
