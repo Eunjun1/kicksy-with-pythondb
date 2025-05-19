@@ -9,7 +9,8 @@ version : 1
 
 
 from fastapi import FastAPI
-from model import router as modle_router
+from model import router as model_router
+from document import router as document_router
 from image import router as image_router
 from product import router as product_router
 from employee import router as employee_router
@@ -24,7 +25,7 @@ from managements import router as management_router
 
 app = FastAPI()
 
-app.include_router(modle_router,prefix="/document",tags=["document"])
+app.include_router(document_router,prefix="/document",tags=["document"])
 app.include_router(employee_router,prefix="/employee",tags=["employee"])
 app.include_router(image_router,prefix="/image",tags=["image"])
 app.include_router(management_router,prefix="/management",tags=["management"])
