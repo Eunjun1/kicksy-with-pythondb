@@ -45,3 +45,19 @@ async def insert(prod_code : int, emp_code : int, store_str_code : int, mag_type
     except Exception as e:
         print('Error : ', e)
         return{'result' : 'Error'}
+    
+@router.post('/update')
+async def update(mag_num : int = Form(...), mag_type : int = Form(...)):
+    try:
+        conn = connect()
+        curs = conn.cursor()
+
+        sql = 'update management set mag_type = %s where mag_num = %s'
+        curs.execute(sql, (mag_type, mag_num))
+        conn.commit()
+        conn.close()
+        return{'result' : 'OK'}
+
+    except Exception as e:
+        print('Error : ', e)
+        return{'result' : 'Error'}
