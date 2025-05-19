@@ -25,4 +25,6 @@ class Model {
       company = res['company'],
       color = res['color'],
       saleprice = res['saleprice'];
+
+      
 }

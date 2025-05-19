@@ -15,7 +15,7 @@ def connect():
 
 
 
-@router.get("/{model_code}")
+@router.get("/model_code={model_code}")
 async def selectAll(model_code : int):
 
     conn = connect()
