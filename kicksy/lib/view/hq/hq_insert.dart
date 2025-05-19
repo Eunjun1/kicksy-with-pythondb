@@ -152,61 +152,63 @@ class _HqInsertState extends State<HqInsert> {
 
   insertImageAndModel() async {
     // 2. 이미지가 저장되었을 경우에만 모델 저장
-      var request = http.MultipartRequest(
-        "POST", 
-        Uri.parse('http://127.0.0.1:8000/model/insert'),
-      );
-      request.fields['image_num'] = 0.toString();
-      request.fields['name'] = nameCT.text;
-      request.fields['category'] = categoryCT.text;
-      request.fields['company'] = companyCT.text;
-      request.fields['color'] = colorCT.text;
-      request.fields['saleprice'] = salepriceCT.text;
+    var request = http.MultipartRequest(
+      "POST",
+      Uri.parse('http://127.0.0.1:8000/model/insert'),
+    );
+    request.fields['image_num'] = 0.toString();
+    request.fields['name'] = nameCT.text;
+    request.fields['category'] = categoryCT.text;
+    request.fields['company'] = companyCT.text;
+    request.fields['color'] = colorCT.text;
+    request.fields['saleprice'] = salepriceCT.text;
 
-      var res = await request.send();
-      if(res.statusCode == 200){
-        Get.snackbar('완', '완');
-      }else{
-        Get.snackbar('X', 'X');
-      }
-      setState(() {});
+    var res = await request.send();
+    if (res.statusCode == 200) {
+      Get.snackbar('완', '완');
+    } else {
+      Get.snackbar('X', 'X');
+    }
+    setState(() {});
     // 1. 이미지 먼저 저장
     for (int i = 0; i < images.length; i++) {
       var request = http.MultipartRequest(
-        "POST", 
+        "POST",
         Uri.parse('http://127.0.0.1:8000/image/insert'),
       );
       request.fields['model_name'] = nameCT.text;
       request.fields['img_num'] = i.toString();
-      
-      if(imageFile != null) {
-        request.files.add(await http.MultipartFile.fromBytes('file', images[i],));
+
+      if (imageFile != null) {
+        request.files.add(
+          await http.MultipartFile.fromBytes('file', images[i]),
+        );
       }
       var res = await request.send();
-      if(res.statusCode == 200){
-      }else{
-      }
+      if (res.statusCode == 200) {
+      } else {}
     }
-
-    
-
   }
 
   insertProduct() async {
-    for(int i = int.parse(minSizeCT.text); i<int.parse(maxSizeCT.text); i+=10){
+    for (
+      int i = int.parse(minSizeCT.text);
+      i < int.parse(maxSizeCT.text);
+      i += 10
+    ) {
       var request = http.MultipartRequest(
-        "POST", 
+        "POST",
         Uri.parse('http://127.0.0.1:8000/product/insert'),
       );
-      request.fields['model_code'] = (modelList.length+1).toString();
+      request.fields['model_code'] = (modelList.length + 1).toString();
       request.fields['size'] = i.toString();
       request.fields['maxstock'] = maxstockCT.text;
       request.fields['registration'] = DateTime.now().toString();
       var res = await request.send();
 
-      if(res.statusCode == 200){
+      if (res.statusCode == 200) {
         Get.snackbar('완', '완');
-      }else{
+      } else {
         Get.snackbar('X', 'X');
       }
       setState(() {});

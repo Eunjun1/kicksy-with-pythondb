@@ -17,6 +17,7 @@ def connect():
 
 
 
+
 @router.get("/name={model_name}")
 async def selectMax(model_name: str):
     
@@ -27,7 +28,6 @@ async def selectMax(model_name: str):
         conn.close()
         result = [{"img_num":row[0]} for row in rows]
         return {'results':result}
-
 
 @router.get("/view/name={model_name}&img_num={img_num}")
 async def selectOne(model_name: str, img_num: int):
