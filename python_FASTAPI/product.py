@@ -29,15 +29,16 @@ async def selectAll(model_code : int):
     return {'results':result}
 
 
-@router.post('/insert_product')
+@router.post('/insert')
 async def insert( model_code: int= Form(...), size: int=Form(...),maxstock: int= Form(...), registration:str=Form(...)):
     try:
         conn = connect()
         curs = conn.cursor()
-        sql = 'select into product(model_code, size, maxstock, registration) VALUES(%s, %s, %s, %s, now())'
-        curs.execute(sql, ( model_code, size, maxstock, registration))
+        sql = 'insert into product(model_code, size, maxstock, registration) values (%s, %s, %s, %s)'
+        curs.execute(sql, (model_code, size, maxstock, registration))
         conn.commit()
         conn.close()
+        return {"result":"OK"}
     except Exception as ex:
         print("Error", ex)
         return {"restult" : "Error"}

@@ -14,7 +14,6 @@ def connect():
     )
 
 
-
 @router.get("/")
 async def selectAll():
 
