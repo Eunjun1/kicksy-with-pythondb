@@ -1,13 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/utils.dart';
+import 'package:kicksy/model/product.dart';
 import 'package:kicksy/view/user/login.dart';
 import 'package:kicksy/view/user/purchase.dart';
 import 'package:kicksy/view/user/purchase_list.dart';
 import 'package:kicksy/view/user/userinfo.dart';
-import 'package:kicksy/vm/database_handler.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:http/http.dart' as http;
 
 class Usermain extends StatefulWidget {
   const Usermain({super.key});
@@ -17,37 +20,79 @@ class Usermain extends StatefulWidget {
 }
 
 class _UsermainState extends State<Usermain> {
-  DatabaseHandler handler = DatabaseHandler();
+
+  List prodList = [];
+  List modList = [];
+  List companyList = [];
+  List modelWithImageList = [];
+  List imageList = [];
+
+  // DatabaseHandler handler = DatabaseHandler();
   late TextEditingController searchController;
   int selectedIndex = -1;
 
   late String where;
-  var email = Get.arguments[0] ?? "__";
+  var email = 1; //Get.arguments[0] ?? "__";
   var value = Get.arguments ?? "__";
-  dynamic? newProd;
   late dynamic newProdCategory;
   late dynamic newProdCompany;
 
   @override
   void initState() {
     super.initState();
-    handler = DatabaseHandler();
+    // handler = DatabaseHandler();
     searchController = TextEditingController();
     where = '';
-
-    _handlenew();
+    getProdJSONData();
+    getModelJSONData();
+    getCompanyJSONData();
+    getImageJSONData();
   }
 
-  Future<void> _handlenew() async {
-    final newProdName = await handler.queryProductNew();
-    final newProdname = newProdName[0].model.name;
-    final newProdImage = await handler.queryImages(newProdname);
+  getProdJSONData() async {
+    var url = Uri.parse('http://127.0.0.1:8000/product/select');
+    var response = await http.get(url);
 
-    setState(() {
-      newProd = newProdImage[0].image;
-      newProdCategory = newProdName[0].model.category;
-      newProdCompany = newProdName[0].model.company;
-    });
+    prodList.clear();
+    prodList.addAll(json.decode(utf8.decode(response.bodyBytes))['results']);
+    setState(() {});
+  }
+
+  getModelJSONData() async {
+    var url = Uri.parse('http://127.0.0.1:8000/model/selectAll');
+    var response = await http.get(url);
+
+    modList.clear();
+    modList.addAll(json.decode(utf8.decode(response.bodyBytes))['results']);
+    setState(() {});
+  }
+
+  getCompanyJSONData() async {
+    var url = Uri.parse('http://127.0.0.1:8000/model/select/company');
+    var response = await http.get(url);
+
+    companyList.clear();
+    companyList.addAll(json.decode(utf8.decode(response.bodyBytes))['results']);
+    setState(() {});
+  }
+
+  getImageJSONData() async {
+    var url = Uri.parse('http://127.0.0.1:8000/image/select');
+    var response = await http.get(url);
+
+    imageList.clear();
+    imageList.addAll(json.decode(utf8.decode(response.bodyBytes))['results']);
+    setState(() {});
+  }
+  
+
+  getModelWithImageJSONData(String where) async {
+    var url = Uri.parse('http://127.0.0.1:8000/model/modelWithImage/?$where');
+    var response = await http.get(url);
+
+    modelWithImageList.clear();
+    modelWithImageList.addAll(json.decode(utf8.decode(response.bodyBytes))['results']);
+    setState(() {});
   }
 
   @override
@@ -57,11 +102,7 @@ class _UsermainState extends State<Usermain> {
       child: Scaffold(
         backgroundColor: Colors.white,
         body: SingleChildScrollView(
-          child: FutureBuilder(
-            future: handler.queryModelwithImage(where),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Center(
+          child: Center(
                   child: GestureDetector(
                     onTap: () => FocusScope.of(context).unfocus(),
                     child: Padding(
@@ -127,17 +168,15 @@ class _UsermainState extends State<Usermain> {
                                 onChanged: (value) async {
                                   if (selectedIndex == -1) {
                                     where =
-                                        "where name like '%${searchController.text}%'";
+                                        'and m.name like "%${searchController.text}%"';
                                   } else {
-                                    final companyList =
-                                        await handler.queryCompany();
                                     final searchCompany =
-                                        companyList[selectedIndex].company;
+                                        companyList[selectedIndex];
                                     where =
-                                        "where name like '%${searchController.text}%' and company = '$searchCompany'";
+                                        'and m.name like "%${searchController.text}%" and company = "%$searchCompany%"';
                                   }
                                   setState(() {});
-                                  reloadData(where);
+                                  getModelWithImageJSONData(where);
                                 },
                                 decoration: InputDecoration(
                                   //search icon
@@ -183,7 +222,9 @@ class _UsermainState extends State<Usermain> {
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(20),
                                   image: DecorationImage(
-                                    image: MemoryImage(newProd),
+                                    image: Image.network(
+                                      'http://127.0.0.1:8000/image/${modelWithImageList[index]['model_num']}?t=${DateTime.now().millisecondsSinceEpoch}'
+                                      ),
                                     fit: BoxFit.cover,
                                   ),
                                 ),
@@ -262,11 +303,7 @@ class _UsermainState extends State<Usermain> {
                             ),
                           ),
 
-                          FutureBuilder(
-                            future: handler.queryCompany(),
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                return SizedBox(
+                          SizedBox(
                                   height: 40,
                                   width: 400,
                                   child: ListView(
@@ -286,7 +323,7 @@ class _UsermainState extends State<Usermain> {
                                             setState(() {
                                               selectedIndex = -1;
                                             });
-                                            reloadData(where);
+                                            getModelWithImageJSONData(where);
                                           },
                                           style: ElevatedButton.styleFrom(
                                             side: BorderSide(
@@ -310,7 +347,7 @@ class _UsermainState extends State<Usermain> {
                                           ),
                                         ),
                                       ),
-                                      ...List.generate(snapshot.data!.length, (
+                                      ...List.generate(companyList.length, (
                                         index,
                                       ) {
                                         final isSelected =
@@ -326,11 +363,11 @@ class _UsermainState extends State<Usermain> {
                                             onPressed: () {
                                               searchController.clear();
                                               where =
-                                                  "where company = '${snapshot.data![index].company}'";
+                                                  "and company = '${companyList[index]}'";
                                               setState(() {
                                                 selectedIndex = index;
                                               });
-                                              reloadData(where);
+                                              getModelWithImageJSONData(where);
                                             },
                                             style: ElevatedButton.styleFrom(
                                               side: BorderSide(
@@ -342,7 +379,7 @@ class _UsermainState extends State<Usermain> {
                                                       : Color(0xffFFBF1F),
                                             ),
                                             child: Text(
-                                              snapshot.data![index].company,
+                                              companyList[index],
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
@@ -357,22 +394,14 @@ class _UsermainState extends State<Usermain> {
                                       }),
                                     ],
                                   ),
-                                );
-                              } else {
-                                return Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              }
-                            },
-                          ),
-
+                                ),
                           Padding(
                             padding: const EdgeInsets.only(top: 10),
                             child: SizedBox(
                               width: 353,
                               child: GridView.builder(
                                 padding: EdgeInsets.zero,
-                                itemCount: snapshot.data?.length,
+                                itemCount: modelWithImageList.length,
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
                                 gridDelegate:
@@ -389,7 +418,7 @@ class _UsermainState extends State<Usermain> {
                                         () => Get.to(
                                           Purchase(),
                                           arguments: [
-                                            snapshot.data![index].model.name,
+                                            modelWithImageList[index]['name'],
                                             email,
                                           ],
                                         ),
@@ -420,11 +449,8 @@ class _UsermainState extends State<Usermain> {
                                                               BorderRadius.circular(
                                                                 20,
                                                               ),
-                                                          child: Image.memory(
-                                                            snapshot
-                                                                .data![index]
-                                                                .images
-                                                                .image,
+                                                          child: Image.network(
+                                                            'http://127.0.0.1:8000/image/${modelWithImageList[index]['model_num']}?t=${DateTime.now().millisecondsSinceEpoch}',
                                                             width: 148,
                                                             height: 131,
                                                             fit: BoxFit.cover,
@@ -450,10 +476,7 @@ class _UsermainState extends State<Usermain> {
                                                               children: [
                                                                 Text(
                                                                   //제조사
-                                                                  snapshot
-                                                                      .data![index]
-                                                                      .model
-                                                                      .company,
+                                                                  modelWithImageList[index]['company'],
                                                                   style: TextStyle(
                                                                     fontSize:
                                                                         16,
@@ -467,10 +490,7 @@ class _UsermainState extends State<Usermain> {
                                                                 ),
                                                                 Text(
                                                                   //상품이름
-                                                                  snapshot
-                                                                      .data![index]
-                                                                      .model
-                                                                      .name,
+                                                                  modelWithImageList[index]['name'],
                                                                   style: TextStyle(
                                                                     fontSize:
                                                                         12,
@@ -484,7 +504,7 @@ class _UsermainState extends State<Usermain> {
                                                                 ),
                                                                 Text(
                                                                   //가격
-                                                                  '₩ ${snapshot.data![index].model.saleprice.toString()}',
+                                                                  '₩ ${modelWithImageList[index]['saleprice'].toString()}',
                                                                   style: TextStyle(
                                                                     fontSize:
                                                                         16,
@@ -519,110 +539,94 @@ class _UsermainState extends State<Usermain> {
                       ),
                     ),
                   ),
-                );
-              } else {
-                return Center(child: CircularProgressIndicator());
-              }
-            },
-          ),
+                )
         ),
         //drawer
-        drawer: FutureBuilder(
-          future: handler.querySignINUser(email),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return Drawer(
-                child: ListView(
-                  children: [
-                    GestureDetector(
-                      onTap:
-                          () => Get.to(Userinfo(), arguments: [email])!.then((
-                            value,
-                          ) {
-                            reloaduser(email);
-                          }),
-                      child: UserAccountsDrawerHeader(
-                        currentAccountPicture: Transform.scale(
-                          scale: 1.3,
-                          child: Image.asset('images/kicksy_white.png'),
-                        ),
+        // drawer: FutureBuilder(
+        //   future: handler.querySignINUser(email),
+        //   builder: (context, snapshot) {
+        //     if (snapshot.hasData) {
+        //       return Drawer(
+        //         child: ListView(
+        //           children: [
+        //             GestureDetector(
+        //               onTap:
+        //                   () => Get.to(Userinfo(), arguments: [email])!.then((
+        //                     value,
+        //                   ) {
+        //                     reloaduser(email);
+        //                   }),
+        //               child: UserAccountsDrawerHeader(
+        //                 currentAccountPicture: Transform.scale(
+        //                   scale: 1.3,
+        //                   child: Image.asset('images/kicksy_white.png'),
+        //                 ),
 
-                        // otherAccountsPictures: [
-                        //   CircleAvatar(backgroundImage: AssetImage('images/logo.png')),
-                        //   CircleAvatar(backgroundImage: AssetImage('images/logo.png')),
-                        // ],
-                        accountName: Text(
-                          snapshot.data![0].email,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        accountEmail: Text(
-                          '전화번호 : ${snapshot.data![0].phone}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        decoration: BoxDecoration(
-                          color: Color(0xFFFFBF1F),
-                          // borderRadius: BorderRadius.only(
-                          //   bottomLeft: Radius.circular(40),
-                          //   bottomRight: Radius.circular(40),
-                          // ),
-                        ),
-                      ),
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.home_outlined),
-                      title: Text(
-                        '메인',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      onTap: () {
-                        Get.to(Usermain(), arguments: [email]);
-                        // print('home is clicked');
-                      },
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.list_alt_rounded),
-                      title: Text(
-                        '주문목록',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      onTap: () {
-                        Get.to(PurchaseList(), arguments: [email]);
-                        // print('home is clicked');
-                      },
-                    ),
-                  ],
-                ),
-              );
-            } else {
-              return Center(child: CircularProgressIndicator());
-            }
-          },
-        ),
+        //                 // otherAccountsPictures: [
+        //                 //   CircleAvatar(backgroundImage: AssetImage('images/logo.png')),
+        //                 //   CircleAvatar(backgroundImage: AssetImage('images/logo.png')),
+        //                 // ],
+        //                 accountName: Text(
+        //                   snapshot.data![0].email,
+        //                   style: TextStyle(
+        //                     fontWeight: FontWeight.bold,
+        //                     color: Colors.white,
+        //                   ),
+        //                 ),
+        //                 accountEmail: Text(
+        //                   '전화번호 : ${snapshot.data![0].phone}',
+        //                   style: TextStyle(
+        //                     fontWeight: FontWeight.bold,
+        //                     color: Colors.white,
+        //                   ),
+        //                 ),
+        //                 decoration: BoxDecoration(
+        //                   color: Color(0xFFFFBF1F),
+        //                   // borderRadius: BorderRadius.only(
+        //                   //   bottomLeft: Radius.circular(40),
+        //                   //   bottomRight: Radius.circular(40),
+        //                   // ),
+        //                 ),
+        //               ),
+        //             ),
+        //             ListTile(
+        //               leading: Icon(Icons.home_outlined),
+        //               title: Text(
+        //                 '메인',
+        //                 style: TextStyle(
+        //                   fontSize: 17,
+        //                   fontWeight: FontWeight.bold,
+        //                 ),
+        //               ),
+        //               onTap: () {
+        //                 Get.to(Usermain(), arguments: [email]);
+        //                 // print('home is clicked');
+        //               },
+        //             ),
+        //             ListTile(
+        //               leading: Icon(Icons.list_alt_rounded),
+        //               title: Text(
+        //                 '주문목록',
+        //                 style: TextStyle(
+        //                   fontSize: 17,
+        //                   fontWeight: FontWeight.bold,
+        //                 ),
+        //               ),
+        //               onTap: () {
+        //                 Get.to(PurchaseList(), arguments: [email]);
+        //                 // print('home is clicked');
+        //               },
+        //             ),
+        //           ],
+        //         ),
+        //       );
+        //     } else {
+        //       return Center(child: CircularProgressIndicator());
+        //     }
+        //   },
+        // ),
       ),
     );
   } //build
 
-  //function
-
-  reloadData(String where) async {
-    await handler.queryModelwithImage(where);
-    setState(() {});
-  }
-
-  reloaduser(String email) async {
-    await handler.querySignINUser(email);
-    setState(() {});
-  }
 } //class

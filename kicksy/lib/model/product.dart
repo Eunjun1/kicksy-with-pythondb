@@ -19,4 +19,15 @@ class Product {
       size = res['size'],
       maxstock = res['maxstock'],
       registration = res['registration'];
+
+  factory Product.fromJson(Map<String, dynamic> json){
+    return Product(
+      code: json['code'], 
+      modelCode: json['modelCode'], 
+      size: json['size'], 
+      maxstock: json['maxstock'],
+      registration: json['registration'],
+    ); 
+  }
+
 }
