@@ -50,15 +50,6 @@ class _HqInsertState extends State<HqInsert> {
 
     createModel = false;
     modelNum = 0;
-    getJSONData();
-  }
-
-  getJSONData() async {
-    var response = await http.get(Uri.parse('http://127.0.0.1:8000/model'));
-    modelList.clear();
-    modelList.addAll(json.decode(utf8.decode(response.bodyBytes))['results']);
-    setState(() {});
-    print(modelList.length);
   }
 
   @override
@@ -160,29 +151,7 @@ class _HqInsertState extends State<HqInsert> {
   }
 
   insertImageAndModel() async {
-    int lastImageNum = -1;
-
-    // 1. 이미지 먼저 저장
-    for (int i = 0; i < images.length; i++) {
-      var request = http.MultipartRequest(
-        "POST", 
-        Uri.parse('http://127.0.0.1:8000/image/insert'),
-      );
-      request.fields['model_name'] = nameCT.text;
-      request.fields['img_num'] = i.toString();
-      
-      if(imageFile != null) {
-        request.files.add(await http.MultipartFile.fromBytes('file', images[i]));
-      }
-      var res = await request.send();
-      if(res.statusCode == 200){
-        lastImageNum = res.statusCode;
-      }else{
-      }
-    }
-
     // 2. 이미지가 저장되었을 경우에만 모델 저장
-    if (lastImageNum != -1) {
       var request = http.MultipartRequest(
         "POST", 
         Uri.parse('http://127.0.0.1:8000/model/insert'),
@@ -197,12 +166,30 @@ class _HqInsertState extends State<HqInsert> {
       var res = await request.send();
       if(res.statusCode == 200){
         Get.snackbar('완', '완');
-        getJSONData();
       }else{
         Get.snackbar('X', 'X');
       }
       setState(() {});
+    // 1. 이미지 먼저 저장
+    for (int i = 0; i < images.length; i++) {
+      var request = http.MultipartRequest(
+        "POST", 
+        Uri.parse('http://127.0.0.1:8000/image/insert'),
+      );
+      request.fields['model_name'] = nameCT.text;
+      request.fields['img_num'] = i.toString();
+      
+      if(imageFile != null) {
+        request.files.add(await http.MultipartFile.fromBytes('file', images[i],));
+      }
+      var res = await request.send();
+      if(res.statusCode == 200){
+      }else{
+      }
     }
+
+    
+
   }
 
   insertProduct() async {

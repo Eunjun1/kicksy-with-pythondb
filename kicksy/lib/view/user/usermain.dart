@@ -221,12 +221,6 @@ class _UsermainState extends State<Usermain> {
                                 height: 174,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(20),
-                                  image: DecorationImage(
-                                    image: Image.network(
-                                      'http://127.0.0.1:8000/image/${modelWithImageList[index]['model_num']}?t=${DateTime.now().millisecondsSinceEpoch}'
-                                      ),
-                                    fit: BoxFit.cover,
-                                  ),
                                 ),
                               ),
 
