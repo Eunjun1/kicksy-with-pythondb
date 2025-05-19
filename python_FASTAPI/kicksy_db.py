@@ -21,6 +21,7 @@ app = FastAPI()
 app.include_router(modle_router,prefix="/model",tags=["model"])
 app.include_router(image_router,prefix="/image",tags=["image"])
 app.include_router(employee_router,prefix="/employee",tags=["employee"])
+app.include_router(product_router,prefix="/product",tags=["product"])
 
 
 if __name__ == "__main__":

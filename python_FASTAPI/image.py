@@ -8,7 +8,7 @@ router = APIRouter()
 
 def connect():
     return pymysql.connect(
-        host="127.0.0.1",
+        host="192.168.50.4",
         user = "root",
         password="qwer1234",
         db="kicksy",
@@ -35,3 +35,7 @@ async def selectAll(model_name: str):
     except Exception as e:
         print("Error:",e)
         return{"result":"Error"}
+    
+
+#@router.post("/insert{model_name}")
+#async def insert(model_name: str=Form(...)):
