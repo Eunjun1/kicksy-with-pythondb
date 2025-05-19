@@ -26,21 +26,3 @@ async def selectAll(doc_code : int):
 
     result = [{"doc_code":row[0],"proposer":row[1],"title":row[2],"contents":row[3],"date":row[4]} for row in rows]
     return {'results':result}
-
-
-@router.post("/insert")
-async def insert(proposer:str=Form(...),title:str=Form(...),contents:str=Form(...),date:str=Form(...),):
-    conn = connect()
-    curs = conn.cursor()
-
-    # SQL
-    try:
-        sql = 'insert into document (proposer, title, contents, date) values (%s,%s,%s,%s)'
-        curs.execute(sql,(proposer,title,contents,date))
-        conn.commit()
-        conn.close()
-        return{'result' : 'OK'}
-    except Exception as ex:
-        conn.close()
-        print("Error :", ex)
-        return{'result' : 'Error'}
