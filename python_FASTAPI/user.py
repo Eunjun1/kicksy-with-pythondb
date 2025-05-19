@@ -5,14 +5,6 @@ import pymysql
 
 router = APIRouter()
 
-class user(BaseModel) :
-    email : str
-    password : str
-    phone : str
-    address : str
-    sex : str
-
-
 def connect():
     return pymysql.connect(
         host="192.168.50.4",
@@ -39,13 +31,13 @@ async def selectAll(email : str):
 
 
 @router.post("/insert") 
-async def insertUser(user : user):
+async def insertUser(email : str = Form(...), password : str = Form(...), phone : str = Form(...), address : str = Form(...), sex : str = Form(...)):
     conn = connect()
     curs = conn.cursor()
 
     try : 
         sql = "insert into user(email, password, phone, address, sex, signupdata) values (%s,%s,%s,%s,%s,now())"
-        curs.execute(sql, (user.email,user.password,user.phone,user.address,user.sex))
+        curs.execute(sql, (email,password,phone,address,sex))
         conn.commit()
         conn.close()
         return {'result' : 'OK'}
