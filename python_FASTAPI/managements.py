@@ -16,6 +16,21 @@ def connect():
 
 
 
+@router.get("/")
+async def selectAll():
+
+    conn = connect()
+    curs = conn.cursor()
+
+    curs.execute("select * from management")
+    rows = curs.fetchall()
+    conn.close()
+
+    result = [{"mag_num":row[0],"prod_code":row[1],"emp_code":row[2],"store_str_code":row[3],"mag_type":row[4],"mag_date":row[5],"mag_count":row[6]} for row in rows]
+    return {'results':result}
+
+
+
 @router.get("/{mag_num}")
 async def selectAll(mag_num : int):
 
