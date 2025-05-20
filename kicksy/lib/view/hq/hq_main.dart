@@ -286,7 +286,7 @@ class _HqMainState extends State<HqMain> {
                                                   () => Get.to(
                                                     () => HqDocument(),
                                                     arguments: [
-                                                      documentList[index]['doc_code'],
+                                                      orderyingList[index]['doc_code'],
                                                       value,
                                                     ],
                                                   ),
@@ -307,7 +307,7 @@ class _HqMainState extends State<HqMain> {
                                                       documentList[0]['proposer'],
                                                     ),
                                                     Text(
-                                                      documentList[0]['date']
+                                                      orderyingList[index]['ody_date']
                                                           .toString()
                                                           .substring(0, 10),
                                                     ),

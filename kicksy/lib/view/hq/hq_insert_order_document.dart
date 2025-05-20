@@ -42,28 +42,24 @@ class _HqInsertOrderDocumentState extends State<HqInsertOrderDocument> {
     getMaxData();
   }
 
-  getMaxData() async{
+  getMaxData() async {
     var responseDoc = await http.get(
       Uri.parse('http://127.0.0.1:8000/document/doc_code'),
     );
     docNum.clear();
-    docNum.addAll(
-      json.decode(utf8.decode(responseDoc.bodyBytes))['results'],
-    );
+    docNum.addAll(json.decode(utf8.decode(responseDoc.bodyBytes))['results']);
     setState(() {});
     print(docNum);
     print(value);
     print(docNum[0]['maxcode']);
   }
 
-  changeNameForCode() async{
+  changeNameForCode() async {
     var responseDoc = await http.get(
       Uri.parse('http://127.0.0.1:8000/model/namecode=${productCodeCT.text}'),
     );
     modCode.clear();
-    modCode.addAll(
-      json.decode(utf8.decode(responseDoc.bodyBytes))['results'],
-    );
+    modCode.addAll(json.decode(utf8.decode(responseDoc.bodyBytes))['results']);
     setState(() {});
     print(modCode);
   }
@@ -195,9 +191,8 @@ class _HqInsertOrderDocumentState extends State<HqInsertOrderDocument> {
                   setState(() {
                     insertDocument();
                     insertOrderying();
-                    setState(() {
-                      
-                    });
+                    setState(() {});
+                    Get.back();
                   });
                   print(value);
                 },
@@ -221,44 +216,43 @@ class _HqInsertOrderDocumentState extends State<HqInsertOrderDocument> {
     );
   }
 
-
-  insertDocument() async { 
-      var request = http.MultipartRequest(
-        "POST",
-        Uri.parse('http://127.0.0.1:8000/document/insert'),
-      );
-      request.fields['proposer'] = propserCT.text;
-      request.fields['title'] = titleCT.text;
-      request.fields['contents'] = contentCT.text;
-      request.fields['date'] = DateTime.now().toString();
-      var res = await request.send();
-      if (res.statusCode == 200) {
-        Get.snackbar('완', '완');
-      } else {
-        Get.snackbar('X', 'X');
-      }
-      setState(() {});
+  insertDocument() async {
+    var request = http.MultipartRequest(
+      "POST",
+      Uri.parse('http://127.0.0.1:8000/document/insert'),
+    );
+    request.fields['proposer'] = propserCT.text;
+    request.fields['title'] = titleCT.text;
+    request.fields['contents'] = contentCT.text;
+    request.fields['date'] = DateTime.now().toString();
+    var res = await request.send();
+    if (res.statusCode == 200) {
+      Get.snackbar('완', '완');
+    } else {
+      Get.snackbar('X', 'X');
+    }
+    setState(() {});
   }
 
-  insertOrderying() async { 
-      await changeNameForCode();
-      var request = http.MultipartRequest(
-        "POST",
-        Uri.parse('http://127.0.0.1:8000/orderying/insert'),
-      );
-      request.fields['emp_code'] = value[0];
-      request.fields['doc_code'] = docNum[0]['maxcode'].toString();
-      request.fields['prod_code'] = modCode[0]['code'].toString();
-      request.fields['ody_type'] = 1.toString();
-      request.fields['ody_date'] = DateTime.now().toString();
-      request.fields['ody_count'] = odyCountCT.text;
-      request.fields['reject_reason'] = rejectReasonCT.text;
-      var res = await request.send();
-      if (res.statusCode == 200) {
-        Get.snackbar('완', '완');
-      } else {
-        Get.snackbar('X', 'X');
-      }
-      setState(() {});
+  insertOrderying() async {
+    await changeNameForCode();
+    var request = http.MultipartRequest(
+      "POST",
+      Uri.parse('http://127.0.0.1:8000/orderying/insert'),
+    );
+    request.fields['emp_code'] = value[0];
+    request.fields['doc_code'] = docNum[0]['maxcode'].toString();
+    request.fields['prod_code'] = modCode[0]['mod_code'].toString();
+    request.fields['ody_type'] = 1.toString();
+    request.fields['ody_date'] = DateTime.now().toString();
+    request.fields['ody_count'] = odyCountCT.text;
+    request.fields['reject_reason'] = rejectReasonCT.text;
+    var res = await request.send();
+    if (res.statusCode == 200) {
+      Get.snackbar('완', '완');
+    } else {
+      Get.snackbar('X', 'X');
+    }
+    setState(() {});
   }
 }
