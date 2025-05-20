@@ -113,7 +113,7 @@ class DatabaseHandler {
   Future<List<Images>> queryUserRequestImages(int num) async {
     final Database db = await initializeDB();
     final List<Map<String, Object?>> queryResult = await db.rawQuery(
-      '''select * from image i, product p,  model m, request r where r.product_code = p.prod_code and p.model_code = m.mod_code and m.name = i.model_name  and r.req_num = $num;
+      '''select * from image i, product p,  model m, request r where r.product_prod_code = p.prod_code and p.model_code = m.mod_code and m.name = i.model_name  and r.req_num = $num;
       
       ''',
     );

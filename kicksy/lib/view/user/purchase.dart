@@ -313,7 +313,7 @@ class _PurchaseState extends State<Purchase> {
                                               selectedSize =
                                                   product[index]['size'];
                                               productCode =
-                                                  product[index]['code']!;
+                                                  product[index]['prod_code']!;
                                             });
                                           },
                                           style: ElevatedButton.styleFrom(
