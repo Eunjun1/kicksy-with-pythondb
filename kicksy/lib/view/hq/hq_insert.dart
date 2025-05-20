@@ -59,6 +59,9 @@ class _HqInsertState extends State<HqInsert> {
     modelList.addAll(json.decode(utf8.decode(response.bodyBytes))['results']);
     setState(() {});
     print(modelList.length);
+    setState(() {
+      
+    });
   }
 
   @override
