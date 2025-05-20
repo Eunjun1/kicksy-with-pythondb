@@ -14,6 +14,19 @@ def connect():
     )
 
 
+@router.get("/")
+async def selectAll():
+
+    conn = connect()
+    curs = conn.cursor()
+
+    curs.execute("select * from document")
+    rows = curs.fetchall()
+    conn.close()
+
+    result = [{"doc_code":row[0],"proposer":row[1],"title":row[2],"contents":row[3],"date":row[4]} for row in rows]
+    return {'results':result}
+
 @router.get("/{doc_code}")
 async def selectAll(doc_code : int):
 

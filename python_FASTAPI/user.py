@@ -5,14 +5,6 @@ import pymysql
 
 router = APIRouter()
 
-class user(BaseModel) :
-    email : str
-    password : str
-    phone : str
-    address : str
-    sex : str
-
-
 def connect():
     return pymysql.connect(
         host="192.168.50.4",
@@ -39,13 +31,13 @@ async def selectAll(email : str):
 
 
 @router.post("/insert") 
-async def insertUser(user : user):
+async def insertUser(email : str = Form(...), password : str = Form(...), phone : str = Form(...), address : str = Form(...), sex : str = Form(...)):
     conn = connect()
     curs = conn.cursor()
 
     try : 
         sql = "insert into user(email, password, phone, address, sex, signupdata) values (%s,%s,%s,%s,%s,now())"
-        curs.execute(sql, (user.email,user.password,user.phone,user.address,user.sex))
+        curs.execute(sql, (email,password,phone,address,sex))
         conn.commit()
         conn.close()
         return {'result' : 'OK'}
@@ -55,15 +47,17 @@ async def insertUser(user : user):
         return {'result' : 'Error'}
 
 @router.post("/update") 
-async def updateUser(user : user):
+async def updateUser(password : str = Form(...), phone : str = Form(...), address : str = Form(...), sex : str= Form(...), email : str=Form(...)):
     conn = connect()
     curs = conn.cursor()
+    
     try : 
         sql = "update user set password = %s, phone = %s, address = %s, sex = %s where email = %s"
-        curs.execute(sql, (user.password, user.phone, user.address, user.sex, user.email))
+        curs.execute(sql, ())
         conn.commit()
         conn.close()
         return {'result' : 'OK'}
+    
     except Exception as e:
         conn.close()
         print("Error : ", e)

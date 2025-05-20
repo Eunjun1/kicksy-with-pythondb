@@ -1,8 +1,10 @@
-import 'dart:typed_data';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:kicksy/vm/database_handler.dart';
+
+import 'package:http/http.dart' as http;
 
 class HqModelDetail extends StatefulWidget {
   const HqModelDetail({super.key});
@@ -12,146 +14,152 @@ class HqModelDetail extends StatefulWidget {
 }
 
 class _HqModelDetailState extends State<HqModelDetail> {
-  late DatabaseHandler handler;
-  late Uint8List modeliamge;
+  List model = [];
+  List product = [];
+  List request = [];
 
+  List count = [];
+  String modelImage = "";
   var value = Get.arguments ?? "__";
 
   @override
   void initState() {
     super.initState();
-    handler = DatabaseHandler();
-    modeliamge = value[2];
+    getJSONDataModel(value[1]);
+    getJSONDataProd(value[1]);
+    getJSONDataImg(value[0]);
+    modelImage = 'http://127.0.0.1:8000/image/view/name=${value[0]}&img_num=0';
+  }
+
+  getJSONDataModel(int code) async {
+    var responseModel = await http.get(
+      Uri.parse('http://127.0.0.1:8000/model/$code'),
+    );
+    model.clear();
+    model.addAll(json.decode(utf8.decode(responseModel.bodyBytes))['results']);
+    setState(() {});
+  }
+
+  getJSONDataProd(int code) async {
+    var responseProd = await http.get(
+      Uri.parse('http://127.0.0.1:8000/product/mod_code=$code'),
+    );
+    product.clear();
+    product.addAll(json.decode(utf8.decode(responseProd.bodyBytes))['results']);
+    setState(() {});
+  }
+
+  getJSONDataImg(String name) async {
+    var responsecount = await http.get(
+      Uri.parse('http://127.0.0.1:8000/image/name=$name'),
+    );
+    count.clear();
+    count.addAll(json.decode(utf8.decode(responsecount.bodyBytes))['results']);
+
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: FutureBuilder(
-          future: handler.queryProductwithImageModel(value[0], value[1]),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              
-              return Column(
-                children: [
-                  SizedBox(height: 80),
-                  Text(
-                    '상세정보',
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(
-                    height: 230,
-                    width: 230,
-                    child: Image.memory(modeliamge, width: 200),
-                  ),
-                  FutureBuilder(
-                    future: handler.queryImages(value[0]),
-                    builder: (context, snapshotimage) {
-                      if (snapshotimage.hasData) {
-                        return SizedBox(
-                          height: 110,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: snapshotimage.data?.length,
-                            itemBuilder: (context, index) {
-                              return GestureDetector(
-                                onTap: () {
-                                  modeliamge = snapshotimage.data![index].image;
-                                  setState(() {});
-                                },
-                                child: Image.memory(
-                                  snapshotimage.data![index].image,
-                                  width: 100,
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      } else {
-                        return Center(child: CircularProgressIndicator());
-                      }
+    return model.isEmpty & product.isEmpty & request.isEmpty & count.isEmpty
+        ? Center(child: CircularProgressIndicator())
+        : Scaffold(
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                SizedBox(height: 80),
+                Text(
+                  '상세정보',
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(
+                  height: 230,
+                  width: 230,
+                  child: Image.network(modelImage),
+                ),
+                SizedBox(
+                  height: 110,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: count.length,
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () {
+                          modelImage =
+                              'http://127.0.0.1:8000/image/view/name=${value[0]}&img_num=${count[index]['img_num']}';
+                          setState(() {});
+                        },
+                        child: Image.network(
+                          'http://127.0.0.1:8000/image/view/name=${value[0]}&img_num=${count[index]['img_num']}',
+                          width: 100,
+                        ),
+                      );
                     },
                   ),
+                ),
 
-                  Text('이름 : ${snapshot.data![0].model.name}'),
-                  Text('카테고리 : ${snapshot.data![0].model.category}'),
-                  Text('제조사 : ${snapshot.data![0].model.company}'),
-                  Text('색상 : ${snapshot.data![0].model.color}'),
-                  Text('가격 : ${snapshot.data![0].model.saleprice.toString()}'),
-                  Text('사이즈 목록'),
-                  SizedBox(
-                    width: 300,
-                    child: GridView.builder(
-                      padding: EdgeInsets.zero,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: snapshot.data?.length,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 5,
-                        crossAxisSpacing: 0,
-                        mainAxisSpacing: 0,
-                        childAspectRatio: 1.0,
-                      ),
-                      itemBuilder: (context, index) {
-                        var prodMaxStock = snapshot.data![index].product.maxstock;
+                Text('이름 : ${model[0]['name']}'),
+                Text('카테고리 : ${model[0]['category']}'),
+                Text('제조사 : ${model[0]['company']}'),
+                Text('색상 : ${model[0]['color']}'),
+                Text('가격 : ${model[0]['saleprice'].toString()}'),
+                Text('사이즈 목록'),
+                SizedBox(
+                  width: 300,
+                  child: GridView.builder(
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: product.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 5,
+                      crossAxisSpacing: 0,
+                      mainAxisSpacing: 0,
+                      childAspectRatio: 1.0,
+                    ),
+                    itemBuilder: (context, index) {
+                      var prodMaxStock = product[index]['maxstock'];
+                      // getJSONDataRequest(product[index]['prod_code']);
 
-                        return Center(
-                          child: Column(
-                            children: [
-                              Text(
-                                snapshot.data![index].product.size.toString(),
-                              ),
-                          FutureBuilder(
-                            future: handler.queryRequestWithProduct(snapshot.data![index].product.size),
-                            builder: (context, snapshot) {
-                              
-                              if(snapshot.hasData){
-                              int sum =0;
-                              if(snapshot.data!.isNotEmpty){
-                              for(int i = 0; i<snapshot.data!.length;i++){
-                                sum +=  snapshot.data![i].count;
-                                
-                              }
-                              
-                              }
-                            return 
+                      int sum = prodMaxStock;
+                      // int sale = request[0]['req_count'];
+                      // sum -= sale;
+                      return Center(
+                        child: Column(
+                          children: [
+                            Text(product[index]['size'].toString()),
                             Column(
                               children: [
-                                Text('${sum.toString()}/$prodMaxStock'),
-                                sum>=prodMaxStock*0.7?Text('발주요망',style: TextStyle(color: Colors.red),):Text(''),
+                                Text('/$prodMaxStock'),
+                                sum <= prodMaxStock * 0.3
+                                    ? Text(
+                                      '발주요망',
+                                      style: TextStyle(color: Colors.red),
+                                    )
+                                    : Text(''),
                               ],
-                            );
-                            
-                            }else{
-                              return Center(child: CircularProgressIndicator(),);
-                            }
-                            
-                            }
-                            
                             ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                  Text('재고량 : ${snapshot.data![0].product.maxstock}'),
-                  Text(
-                    '등록 날짜 : ${snapshot.data![0].product.registration.substring(0, 10)}',
-                  ),
-                  ElevatedButton(
-                    onPressed: () => Get.back(),
-                    child: Text('확인'),
-                  ),
-                ],
-              );
-            } else {
-              return Center(child: CircularProgressIndicator());
-            }
-          },
-        ),
-      ),
+                ),
+                Text('재고량 : ${product[0]['maxstock']}'),
+                Text('등록 날짜 : ${product[0]['registration'].substring(0, 10)}'),
+                ElevatedButton(onPressed: () => Get.back(), child: Text('확인')),
+              ],
+            ),
+          ),
+        );
+  }
+
+  getJSONDataRequest(int code) async {
+    var responseReq = await http.get(
+      Uri.parse('http://127.0.0.1:8000/request/prod_code=$code'),
     );
+    request.clear();
+    request.addAll(json.decode(utf8.decode(responseReq.bodyBytes))['results']);
+    setState(() {});
   }
 }

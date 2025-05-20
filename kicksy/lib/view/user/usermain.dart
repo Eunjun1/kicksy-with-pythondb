@@ -26,27 +26,30 @@ class _UsermainState extends State<Usermain> {
   List companyList = [];
   List modelWithImageList = [];
   List imageList = [];
+  late String searchname;
+  late String searchCompany;
 
   // DatabaseHandler handler = DatabaseHandler();
   late TextEditingController searchController;
   int selectedIndex = -1;
 
-  late String where;
   var email = 1; //Get.arguments[0] ?? "__";
   var value = Get.arguments ?? "__";
-  late dynamic newProdCategory;
-  late dynamic newProdCompany;
+  // late dynamic newProdCategory;
+  // late dynamic newProdCompany;
 
   @override
   void initState() {
     super.initState();
     // handler = DatabaseHandler();
     searchController = TextEditingController();
-    where = '';
+    searchname = '';
+    searchCompany = '';
     getProdJSONData();
     getModelJSONData();
     getCompanyJSONData();
     getImageJSONData();
+    getModelWithImageJSONData(searchname,searchCompany);
   }
 
   getProdJSONData() async {
@@ -86,13 +89,15 @@ class _UsermainState extends State<Usermain> {
   }
   
 
-  getModelWithImageJSONData(String where) async {
-    var url = Uri.parse('http://127.0.0.1:8000/model/modelWithImage/?$where');
+  getModelWithImageJSONData(String name , String company) async {
+    var url = Uri.parse('http://127.0.0.1:8000/model/modelWithImage/?name=$name&company=$company');
     var response = await http.get(url);
 
+    if (response.statusCode == 200) {
     modelWithImageList.clear();
     modelWithImageList.addAll(json.decode(utf8.decode(response.bodyBytes))['results']);
     setState(() {});
+  }
   }
 
   @override
@@ -167,16 +172,14 @@ class _UsermainState extends State<Usermain> {
                                 controller: searchController,
                                 onChanged: (value) async {
                                   if (selectedIndex == -1) {
-                                    where =
-                                        'and m.name like "%${searchController.text}%"';
+                                    searchname =
+                                        searchController.text;
                                   } else {
-                                    final searchCompany =
+                                    searchCompany =
                                         companyList[selectedIndex];
-                                    where =
-                                        'and m.name like "%${searchController.text}%" and company = "%$searchCompany%"';
                                   }
                                   setState(() {});
-                                  getModelWithImageJSONData(where);
+                                  getModelWithImageJSONData(searchController.text, searchCompany);
                                 },
                                 decoration: InputDecoration(
                                   //search icon
@@ -216,19 +219,19 @@ class _UsermainState extends State<Usermain> {
                           //container내부에 사진 들어가기
                           Stack(
                             children: [
-                              Container(
-                                width: 346,
-                                height: 174,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  image: DecorationImage(
-                                    image: Image.network(
-                                      'http://127.0.0.1:8000/image/${modelWithImageList[index]['model_num']}?t=${DateTime.now().millisecondsSinceEpoch}'
-                                      ),
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
+                              // Container(
+                              //   width: 346,
+                              //   height: 174,
+                              //   decoration: BoxDecoration(
+                              //     borderRadius: BorderRadius.circular(20),
+                              //     image: DecorationImage(
+                              //       image: NetworkImage(
+                              //         'http://127.0.0.1:8000/image/${modelWithImageList[0]['model_num']}?t=${DateTime.now().millisecondsSinceEpoch}'
+                              //         ),
+                              //       fit: BoxFit.cover,
+                              //     ),
+                              //   ),
+                              // ),
 
                               Container(
                                 width: 346,
@@ -261,27 +264,27 @@ class _UsermainState extends State<Usermain> {
                                         ),
                                         child: Row(
                                           children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                top: 10.0,
-                                              ),
-                                              child: Text(
-                                                '$newProdCompany  ',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.w700,
-                                                  fontSize: 30,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                            Text(
-                                              newProdCategory,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 45,
-                                                color: Colors.white,
-                                              ),
-                                            ),
+                                            // Padding(
+                                            //   padding: const EdgeInsets.only(
+                                            //     top: 10.0,
+                                            //   ),
+                                            //   child: Text(
+                                            //     '$newProdCompany  ',
+                                            //     style: TextStyle(
+                                            //       fontWeight: FontWeight.w700,
+                                            //       fontSize: 30,
+                                            //       color: Colors.white,
+                                            //     ),
+                                            //   ),
+                                            // ),
+                                            // Text(
+                                            //   newProdCategory,
+                                            //   style: TextStyle(
+                                            //     fontWeight: FontWeight.w700,
+                                            //     fontSize: 45,
+                                            //     color: Colors.white,
+                                            //   ),
+                                            // ),
                                           ],
                                         ),
                                       ),
@@ -319,11 +322,12 @@ class _UsermainState extends State<Usermain> {
                                         child: ElevatedButton(
                                           onPressed: () {
                                             searchController.clear();
-                                            where = "";
+                                            searchname = '';
+                                            searchCompany = '';
                                             setState(() {
                                               selectedIndex = -1;
+                                              getModelWithImageJSONData(searchname, searchCompany);
                                             });
-                                            getModelWithImageJSONData(where);
                                           },
                                           style: ElevatedButton.styleFrom(
                                             side: BorderSide(
@@ -362,12 +366,12 @@ class _UsermainState extends State<Usermain> {
                                           child: ElevatedButton(
                                             onPressed: () {
                                               searchController.clear();
-                                              where =
-                                                  "and company = '${companyList[index]}'";
+                                              searchCompany =
+                                                  companyList[selectedIndex + 1]['company'];
                                               setState(() {
                                                 selectedIndex = index;
                                               });
-                                              getModelWithImageJSONData(where);
+                                              getModelWithImageJSONData(searchname, searchCompany);
                                             },
                                             style: ElevatedButton.styleFrom(
                                               side: BorderSide(
@@ -379,7 +383,7 @@ class _UsermainState extends State<Usermain> {
                                                       : Color(0xffFFBF1F),
                                             ),
                                             child: Text(
-                                              companyList[index],
+                                              companyList[index]['company'],
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
@@ -450,7 +454,7 @@ class _UsermainState extends State<Usermain> {
                                                                 20,
                                                               ),
                                                           child: Image.network(
-                                                            'http://127.0.0.1:8000/image/${modelWithImageList[index]['model_num']}?t=${DateTime.now().millisecondsSinceEpoch}',
+                                                            'http://127.0.0.1:8000/image/view/name=${modelWithImageList[index]['name']}&img_num=${modelWithImageList[index]['img_num']}?t=${DateTime.now().millisecondsSinceEpoch}',
                                                             width: 148,
                                                             height: 131,
                                                             fit: BoxFit.cover,

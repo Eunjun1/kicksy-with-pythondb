@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Form
-from pydantic import BaseModel
 import pymysql
 
 
@@ -14,35 +13,29 @@ def connect():
         charset="utf8",
     )
 
-class request(BaseModel) :
-    user_email : str
-    product_prod_code : int
-    store_str_code : int
-    req_type : int
-    req_count : int
-    reason : str
 
-@router.get("/{user_email}")
-async def selectAll(user_email : str):
+
+@router.get("/email={prod_code}")
+async def selectAll(prod_code : str):
 
     conn = connect()
     curs = conn.cursor()
 
-    curs.execute("select * from request where user_email = %s",(user_email,))
+    curs.execute("select * from request where prod_code = %s",(prod_code,))
     rows = curs.fetchall()
     conn.close()
 
-    result = [{"req_num":row[0],"user_email":row[1],"product_prod_code":row[2],"store_str_code":row[3],"req_type":row[4],"req_date":row[5],"req_count":row[6],"reason":row[7]} for row in rows]
+    result = [{"req_num":row[0],"prod_code":row[1],"product_prod_code":row[2],"store_str_code":row[3],"req_type":row[4],"req_date":row[5],"req_count":row[6],"reason":row[7]} for row in rows]
     return {'results':result}
 
 @router.post("/insert")
-async def insert(request : request):
+async def insert(prod_code :str = Form(...), product_prod_code : int = Form(...), store_str_code : int = Form(...), req_type : int = Form(...), req_count : int = Form(...), reason : str = Form(...)):
     conn = connect()
     curs = conn.cursor()
 
     try : 
-        sql='insert into request(user_email,product_prod_code,store_str_code,req_type,req_date,req_count,reason) values (%s,%s,%s,%s,now(),%s,%s)'
-        curs.execute(sql,(request.user_email,request.product_prod_code,request.store_str_code,request.req_type,request.req_count,request.reason))
+        sql='insert into request(prod_code,product_prod_code,store_str_code,req_type,req_date,req_count,reason) values (%s,%s,%s,%s,now(),%s,%s)'
+        curs.execute(sql,(prod_code,product_prod_code,store_str_code,req_type,req_count,reason))
         conn.commit()
         conn.close()
         return {'result' : 'OK'}
@@ -50,3 +43,34 @@ async def insert(request : request):
         conn.close()
         print("Error : ", ex)
         return {'result' : 'Error'}
+    
+@router.post('/update')
+async def update(req_num : int = Form(...),req_type : int = Form(...),reason : str = Form(...)) :
+    try : 
+        conn = connect()
+        curs = conn.cursor()
+        sql = 'update request set req_type=%s, req_date=now(), reason=%s where req_num=%s'
+        curs.execute(sql, (req_type, reason,req_num))
+        conn.commit()
+        conn.close()
+        return {"result" : 'OK'}
+    
+
+    except Exception as e :
+        print('Error :', e)
+        return {"reslut" : "Error"}
+    
+
+
+@router.get("/prod_code={prod_code}")
+async def selectAll(prod_code : int):
+
+    conn = connect()
+    curs = conn.cursor()
+
+    curs.execute("select sum(req_count) from request where product_prod_code = %s",(prod_code,))
+    rows = curs.fetchall()
+    conn.close()
+
+    result = [{"req_count":row[0]} for row in rows]
+    return {'results':result}
