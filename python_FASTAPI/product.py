@@ -39,6 +39,19 @@ async def selectAll(model_code : int):
     result = [{"prod_code":row[0],"model_code":row[1],"size":row[2],"maxstock":row[3],"registration":row[4]} for row in rows]
     return {'results':result}
 
+@router.get("/prod_code={prod_code}")
+async def selectAll(prod_code : int):
+
+    conn = connect()
+    curs = conn.cursor()
+
+    curs.execute("select model_code from product where prod_code = %s",(prod_code,))
+    rows = curs.fetchall()
+    conn.close()
+
+    result = [{"prod_code":row[0]} for row in rows]
+    return {'results':result}
+
 @router.post('/insert')
 async def insert( model_code: int= Form(...), size: int=Form(...),maxstock: int= Form(...), registration:str=Form(...)):
     try:
