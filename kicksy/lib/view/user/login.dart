@@ -2,11 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:kicksy/model/user.dart';
 import 'package:kicksy/view/hq/hq_main.dart';
 import 'package:kicksy/view/user/signup.dart';
 import 'package:kicksy/view/user/usermain.dart';
-import 'package:http/http.dart' as http;
 import 'package:kicksy/vm/database_handler.dart';
+import 'package:http/http.dart'as http;
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -17,107 +18,66 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   //property
-  late TextEditingController userIDeditingController;
-  late TextEditingController userPWeditingController;
-  late DatabaseHandler handler;
-  List userId = [];
-  List userPw = [];
-  List user = [];
-  List empId = [];
-  List empPw = [];
-  List emp = [];
+  List<String> data  = [];
+  late TextEditingController userIDeditingController = TextEditingController();
+  late TextEditingController userPWeditingController = TextEditingController();
+  
 
   @override
   void initState() {
     super.initState();
-    handler = DatabaseHandler();
-    userIDeditingController = TextEditingController();
-    userPWeditingController = TextEditingController();
-    getuserJSONData();
-    getEmployeeJSONData();
+    getJSONData();
+  }
+  getJSONData()async{
+    var response = await http.get(Uri.parse('http://127.0.0.1:8000/user/'));
+    data.clear();
+    data.addAll(json.decode(utf8.decode(response.bodyBytes))['results']);
+    // print(data);
+    setState(() {});
   }
 
-  getuserJSONData() async {
-    var url = Uri.parse('http://127.0.0.1:8000/user/');
-    var response = await http.get(url);
+  // Future<void> _handleLogin() async {
+  //   String id = userIDeditingController.text.trim();
+  //   String pw = userPWeditingController.text.trim();
 
-    user.clear();
-    userId.clear();
-    userPw.clear();
-    user.addAll(json.decode(utf8.decode(response.bodyBytes))['results']);
-    setState(() {});
-    // print(userPw);
-    for (int i = 0; i< user.length; i++){
-      userId.add(user[i]['email']);
-      userPw.add(user[i]['password']);
-    }
-    setState(() {});
-    // print(userId);
-    // print(userPw);
-  }
+    // if (id.isEmpty || pw.isEmpty) {
+    //   Get.snackbar('입력 오류', '아이디와 비밀번호를 모두 입력하세요.');
+    //   return;
+    // }
 
-  getEmployeeJSONData() async {
-    var url = Uri.parse('http://127.0.0.1:8000/employee/');
-    var response = await http.get(url);
+    // // 유저 테이블 확인
+    // final userList = await handler.querySignINUser(id);
+    // if (userList.isNotEmpty) {
+    //   final user = userList.first;
+    //   if (user.password == pw) {
+    //     Get.to(Usermain(), arguments: [user.email]);
+    //     userIDeditingController.clear();
+    //     userPWeditingController.clear();
+    //     return;
+    //   } else {
+    //     Get.snackbar('로그인 실패', '비밀번호가 틀렸습니다.');
+    //     return;
+    //   }
+    // }
 
-    empId.clear();
-    empPw.clear();
-    emp.clear();
-    emp.addAll(json.decode(utf8.decode(response.bodyBytes))['results']);
-    setState(() {});
-    // print(userPw);
-    for (int i = 0; i< emp.length; i++){
-      empId.add(emp[i]['emp_code']);
-      empPw.add(emp[i]['password']);
-    }
-    setState(() {});
-    print(empId);
-    // print(empPw);
-  }
+    // // 직원 테이블 확인
+    // final empList = await handler.querySignINEmp(id);
+    // if (empList.isNotEmpty) {
+    //   final emp = empList.first;
+    //   if (emp.password == pw) {
+    //     Get.to(HqMain(), arguments: [emp.emp_code]);
+    //     userIDeditingController.clear();
+    //     userPWeditingController.clear();
+    //     return;
+    //   } else {
+    //     Get.snackbar('로그인 실패', '비밀번호가 틀렸습니다.');
+    //     return;
+    //   }
+    // }
 
-  Future<void> _handleLogin() async {
-    String id = userIDeditingController.text.trim();
-    String pw = userPWeditingController.text.trim();
-
-    if (id.isEmpty || pw.isEmpty) {
-      Get.snackbar('입력 오류', '아이디와 비밀번호를 모두 입력하세요.');
-      return;
-    }
-
-    // 유저 테이블 확인
-    final userList = await handler.querySignINUser(id);
-    if (userList.isNotEmpty) {
-      final user = userList.first;
-      if (user.password == userPw) {
-        Get.to(Usermain(), arguments: [user.email]);
-        userIDeditingController.clear();
-        userPWeditingController.clear();
-        return;
-      } else {
-        Get.snackbar('로그인 실패', '비밀번호가 틀렸습니다.');
-        return;
-      }
-    }
-
-    
-    // 직원 테이블 확인
-    final empList = await handler.querySignINEmp(id);
-    if (empList.isNotEmpty) {
-      final emp = empList.first;
-      if (emp.password == pw) {
-        Get.to(HqMain(), arguments: [emp.emp_code]);
-        userIDeditingController.clear();
-        userPWeditingController.clear();
-        return;
-      } else {
-        Get.snackbar('로그인 실패', '비밀번호가 틀렸습니다.');
-        return;
-      }
-    }
-
-    // 둘 다 없음
-    Get.snackbar('로그인 실패', '계정이 존재하지 않습니다.');
-  }
+  //   // 둘 다 없음
+  //   Get.snackbar('로그인 실패', '계정이 존재하지 않습니다.');
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -129,8 +89,8 @@ class _LoginState extends State<Login> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 50),
                 //logo
+                SizedBox(height: 50),
                 Image.asset('images/logo.png', width: 350),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 20),
@@ -151,58 +111,9 @@ class _LoginState extends State<Login> {
                     ),
                   ),
                 ),
-                SizedBox(
-                  //ID입력창
-                  width: 350,
-                  child: TextField(
-                    controller: userIDeditingController,
-
-                    decoration: InputDecoration(
-                      labelText: 'ID',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(color: Color(0xFF727272)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        //입력 비활성화됐을때
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(color: Color(0xFF727272)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(color: Color(0xFFFFBF1F)),
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: SizedBox(
-                    //PW입력창
-                    width: 350,
-                    child: TextField(
-                      controller: userPWeditingController,
-                      decoration: InputDecoration(
-                        // hintText: 'ID를입력하세요',
-                        labelText: 'PW',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: BorderSide(color: Color(0xFF727272)),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          //입력 비활성화됐을때
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: BorderSide(color: Color(0xFF727272)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: BorderSide(color: Color(0xFFFFBF1F)),
-                        ),
-                      ),
-                      obscureText: true,
-                    ),
-                  ),
-                ),
+                //   //ID입력창
+                _buildTextfield(userIDeditingController, 'ID'),
+                _buildTextfield(userPWeditingController, 'PW'),
                 Padding(
                   padding: const EdgeInsets.only(top: 80.0),
                   child: SizedBox(
@@ -210,33 +121,10 @@ class _LoginState extends State<Login> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
-                        bool idvalue = userId.contains(userIDeditingController.text);
-                        bool pwvalue = userPw.contains(userPWeditingController.text);
-                        bool empidvalue = empId.contains(int.parse(userIDeditingController.text));
-                        bool emppwvalue = empPw.contains(userPWeditingController.text);
-                        // print(idvalue);
-                        // print(pwvalue);
-                        print(userIDeditingController.text);
-                        print(empidvalue);
-                        // print(emppwvalue);
-                        if(idvalue && pwvalue){
-                          Get.to(
-                            Usermain(),
-                            arguments: [
-                              userIDeditingController.text
-                            ]
-                          );
-                        }else if(empidvalue && emppwvalue){
-                          Get.to(
-                            HqMain(),
-                            arguments: [
-                              userIDeditingController.text
-                            ]
-                          );
-                        }
-                        else{
-                          Get.snackbar('title', 'message');
-                        }
+                        // if(userIDeditingController.text == ){
+
+                        // }
+                        Get.to(Usermain());
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFFFBF1F),
@@ -293,5 +181,39 @@ class _LoginState extends State<Login> {
         ),
       ),
     );
+  }//build
+
+  //----wigget----
+  Widget _buildTextfield(TextEditingController controller, String labelText){
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 5, 0,10),
+      child: SizedBox(
+        width: 350,
+        child: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            labelText: labelText,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(color: Color(0xFF727272)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              //입력 비활성화됐을때
+              borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(color: Color(0xFF727272)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(color: Color(0xFFFFBF1F)),
+            ),
+          ),
+        ),
+      ),
+    );
+
   }
-}
+
+
+  //----function----
+
+}//class
