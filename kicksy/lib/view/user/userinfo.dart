@@ -27,8 +27,7 @@ class _UserinfoState extends State<Userinfo> {
   late TextEditingController userDetail_AddressController; //상세주소
   late List<String> userSex;
   late String dropDownValue; //dropdown
-
-  var value = Get.arguments ?? "__";
+  String email = Get.arguments[0] ?? "__";
 
   List user = [];
 
@@ -38,14 +37,12 @@ class _UserinfoState extends State<Userinfo> {
     handler = DatabaseHandler();
     userIDController = TextEditingController();
     userPWController = TextEditingController();
-    // userPWcheckController = TextEditingController();
     userPhoneController = TextEditingController();
     userAddressController = TextEditingController();
     userDetail_AddressController = TextEditingController();
     userSex = ['무관', '남성', '여성'];
     dropDownValue = userSex[0];
-
-    getUserInfo(value[0]);
+    getUserInfo(email);
   }
 
   getUserInfo(String id) async {
@@ -54,302 +51,334 @@ class _UserinfoState extends State<Userinfo> {
     );
     user.clear();
     user.addAll(json.decode(utf8.decode(responseModel.bodyBytes))['results']);
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          children: [
-            SizedBox(height: 50),
-            //우측상단 logo
-            Stack(
-              children: [
-                Center(child: Image.asset('images/logo.png', width: 120)),
-              ],
-            ),
-            Container(
-              width: 350,
-              height: 100,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    '회원정보',
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-            //email
-            SizedBox(
-              width: 350,
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Email',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  TextField(
-                    controller: userIDController,
-                    decoration: InputDecoration(
-                      hintText: user[0]['email'],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(color: Color(0xFF727272)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        //입력 비활성화됐을때
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(color: Color(0xFF727272)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(color: Color(0xFFFFBF1F)),
-                      ),
-                    ),
-                    readOnly: true,
-                  ),
-                ],
-              ),
-            ),
-
-            //PW
-            SizedBox(
-              width: 350,
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text(
-                          '비밀번호',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  TextField(
-                    controller: userPWController,
-                    decoration: InputDecoration(
-                      hintText: user[0]['password'],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(color: Color(0xFF727272)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        //입력 비활성화됐을때
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(color: Color(0xFF727272)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(color: Color(0xFFFFBF1F)),
-                      ),
-                    ),
-                    readOnly: false,
-                    obscureText: true,
-                  ),
-                ],
-              ),
-            ),
-
-            // //PW check
-            // SizedBox(
-            //   width: 350,
-            //   child: Column(
-            //     children: [
-            //       Padding(
-            //         padding: const EdgeInsets.all(8.0),
-            //         child: Row(
-            //           mainAxisAlignment: MainAxisAlignment.start,
-            //           children: [
-            //             Text('비밀번호확인',style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,)),
-            //           ],
-            //         ),
-            //       ),
-            //       TextField(
-            //         controller: userPWcheckController,
-            //         decoration: InputDecoration(
-            //           border: OutlineInputBorder(
-            //             borderRadius: BorderRadius.circular(20),
-            //             borderSide: BorderSide(color: Color(0xFF727272)),
-            //           ),
-            //           enabledBorder: OutlineInputBorder(
-            //             //입력 비활성화됐을때
-            //             borderRadius: BorderRadius.circular(20),
-            //             borderSide: BorderSide(color: Color(0xFF727272)),
-            //           ),
-            //           focusedBorder: OutlineInputBorder(
-            //             borderRadius: BorderRadius.circular(20),
-            //             borderSide: BorderSide(color: Color(0xFFFFBF1F)),
-            //           ),
-            //         ),
-            //         readOnly: false,
-            //         obscureText: true,
-            //       ),
-            //     ],
-            //   ),
-            // ),
-
-            //PW check
-            SizedBox(
-              width: 350,
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text(
-                          '전화번호',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  TextField(
-                    controller: userPhoneController,
-                    decoration: InputDecoration(
-                      hintText: user[0]['phone'],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(color: Color(0xFF727272)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        //입력 비활성화됐을때
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(color: Color(0xFF727272)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(color: Color(0xFFFFBF1F)),
-                      ),
-                    ),
-                    readOnly: false,
-                  ),
-                ],
-              ),
-            ),
-            //성별 선택
-            Padding(
-              padding: const EdgeInsets.all(30.0),
-              child: SizedBox(
-                width: 350,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
+      body:
+          user.isEmpty
+              ? Center(child: CircularProgressIndicator())
+              : Center(
+                child: Column(
                   children: [
+                    SizedBox(height: 50),
+                    //우측상단 logo
+                    Stack(
+                      children: [
+                        Center(
+                          child: Image.asset('images/logo.png', width: 120),
+                        ),
+                      ],
+                    ),
                     Container(
-                      width: 120,
-                      height: 55,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Color(0xFF727272), width: 1),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
+                      width: 350,
+                      height: 100,
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.only(right: 10),
-                            child: Text(user[0]['sex']),
-                          ),
-                          DropdownButton(
-                            iconEnabledColor: Color(0xFFFFBF1F),
-                            icon: Icon(
-                              Icons.keyboard_arrow_down,
-                              size: 28,
-                            ), //꺾쇠아이콘
-                            value: dropDownValue,
-                            items:
-                                userSex.map((String items) {
-                                  return DropdownMenuItem(
-                                    value: items,
-                                    child: Text(items),
-                                  );
-                                }).toList(),
-                            onChanged: (value) {
-                              dropDownValue = value!;
-                              setState(() {});
-                            },
+                          Text(
+                            '회원정보',
+                            style: TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
+                      ),
+                    ),
+                    //email
+                    SizedBox(
+                      width: 350,
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Email',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          TextField(
+                            controller: userIDController,
+                            decoration: InputDecoration(
+                              hintText: user[0]['email'],
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(
+                                  color: Color(0xFF727272),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                //입력 비활성화됐을때
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(
+                                  color: Color(0xFF727272),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(
+                                  color: Color(0xFFFFBF1F),
+                                ),
+                              ),
+                            ),
+                            readOnly: true,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    //PW
+                    SizedBox(
+                      width: 350,
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '비밀번호',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          TextField(
+                            controller: userPWController,
+                            decoration: InputDecoration(
+                              hintText: user[0]['password'],
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(
+                                  color: Color(0xFF727272),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                //입력 비활성화됐을때
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(
+                                  color: Color(0xFF727272),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(
+                                  color: Color(0xFFFFBF1F),
+                                ),
+                              ),
+                            ),
+                            readOnly: false,
+                            obscureText: true,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // //PW check
+                    // SizedBox(
+                    //   width: 350,
+                    //   child: Column(
+                    //     children: [
+                    //       Padding(
+                    //         padding: const EdgeInsets.all(8.0),
+                    //         child: Row(
+                    //           mainAxisAlignment: MainAxisAlignment.start,
+                    //           children: [
+                    //             Text('비밀번호확인',style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,)),
+                    //           ],
+                    //         ),
+                    //       ),
+                    //       TextField(
+                    //         controller: userPWcheckController,
+                    //         decoration: InputDecoration(
+                    //           border: OutlineInputBorder(
+                    //             borderRadius: BorderRadius.circular(20),
+                    //             borderSide: BorderSide(color: Color(0xFF727272)),
+                    //           ),
+                    //           enabledBorder: OutlineInputBorder(
+                    //             //입력 비활성화됐을때
+                    //             borderRadius: BorderRadius.circular(20),
+                    //             borderSide: BorderSide(color: Color(0xFF727272)),
+                    //           ),
+                    //           focusedBorder: OutlineInputBorder(
+                    //             borderRadius: BorderRadius.circular(20),
+                    //             borderSide: BorderSide(color: Color(0xFFFFBF1F)),
+                    //           ),
+                    //         ),
+                    //         readOnly: false,
+                    //         obscureText: true,
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
+
+                    //PW check
+                    SizedBox(
+                      width: 350,
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '전화번호',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          TextField(
+                            controller: userPhoneController,
+                            decoration: InputDecoration(
+                              hintText: user[0]['phone'],
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(
+                                  color: Color(0xFF727272),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                //입력 비활성화됐을때
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(
+                                  color: Color(0xFF727272),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(
+                                  color: Color(0xFFFFBF1F),
+                                ),
+                              ),
+                            ),
+                            readOnly: false,
+                          ),
+                        ],
+                      ),
+                    ),
+                    //성별 선택
+                    Padding(
+                      padding: const EdgeInsets.all(30.0),
+                      child: SizedBox(
+                        width: 350,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 120,
+                              height: 55,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Color(0xFF727272),
+                                  width: 1,
+                                ),
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 10),
+                                    child: Text(user[0]['sex']),
+                                  ),
+                                  DropdownButton(
+                                    iconEnabledColor: Color(0xFFFFBF1F),
+                                    icon: Icon(
+                                      Icons.keyboard_arrow_down,
+                                      size: 28,
+                                    ), //꺾쇠아이콘
+                                    value: dropDownValue,
+                                    items:
+                                        userSex.map((String items) {
+                                          return DropdownMenuItem(
+                                            value: items,
+                                            child: Text(items),
+                                          );
+                                        }).toList(),
+                                    onChanged: (value) {
+                                      dropDownValue = value!;
+                                      setState(() {});
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 50, 0, 0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          updateUser();
+                          Get.back();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFFFFBF1F),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          minimumSize: Size(350, 40),
+                        ),
+                        child: Text(
+                          '수정',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Color(0xFFFFFFFF),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Get.back();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Theme.of(context).colorScheme.errorContainer,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          minimumSize: Size(350, 40),
+                        ),
+                        child: Text(
+                          '취소',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color:
+                                Theme.of(context).colorScheme.onErrorContainer,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0, 50, 0, 0),
-              child: ElevatedButton(
-                onPressed: () {
-                  updateUser();
-                  Get.back();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFFFBF1F),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  minimumSize: Size(350, 40),
-                ),
-                child: Text(
-                  '수정',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Color(0xFFFFFFFF),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-              child: ElevatedButton(
-                onPressed: () {
-                  Get.back();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.errorContainer,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  minimumSize: Size(350, 40),
-                ),
-                child: Text(
-                  '취소',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Theme.of(context).colorScheme.onErrorContainer,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
 
       //drawer
     );
@@ -362,7 +391,7 @@ class _UserinfoState extends State<Userinfo> {
         "POST",
         Uri.parse('http://127.0.0.1:8000/user/update'),
       );
-      request.fields['email'] = value[0];
+      request.fields['email'] = email;
       request.fields['password'] = userPWController.text;
       request.fields['phone'] = userPhoneController.text;
       request.fields['sex'] = dropDownValue;
