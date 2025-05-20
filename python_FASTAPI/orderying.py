@@ -50,7 +50,6 @@ async def insert(emp_code:int=Form(...),doc_code:int=Form(...),prod_code:int=For
     try:
         conn = connect()
         curs = conn.cursor()
-        sql = 'insert into orderying values (emp_code,doc_code,prod_code,ody_type,ody_date,ody_count,reject_reason)'
         sql = 'insert into orderying (emp_code,doc_code,prod_code,ody_type,ody_date,ody_count,reject_reason) values (%s,%s,%s,%s,%s,%s,%s)'
         curs.execute(sql,(emp_code,doc_code,prod_code,ody_type,ody_date,ody_count,reject_reason))
         conn.commit()
@@ -59,6 +58,23 @@ async def insert(emp_code:int=Form(...),doc_code:int=Form(...),prod_code:int=For
     except Exception as e:
         print("Error : ",e)
         return {"result":"Error"}
+    
+@router.post("/update") 
+async def updateUser(ody_type : int=Form(...), ody_num : int=Form(...)):
+    conn = connect()
+    curs = conn.cursor()
+    
+    try : 
+        sql = "update orderying set ody_type = %s where ody_num = %s"
+        curs.execute(sql, (ody_type, ody_num))
+        conn.commit()
+        conn.close()
+        return {'result' : 'OK'}
+    
+    except Exception as e:
+        conn.close()
+        print("Error : ", e)
+        return {'result' : 'Error'}
 
 
 # ======================================

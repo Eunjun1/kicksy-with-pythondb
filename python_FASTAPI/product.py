@@ -13,7 +13,18 @@ def connect():
         charset="utf8",
     )
 
+@router.get("/select")
+async def selectAll():
 
+    conn = connect()
+    curs = conn.cursor()
+
+    curs.execute("select * from product")
+    rows = curs.fetchall()
+    conn.close()
+
+    result = [{"prod_code":row[0],"model_code":row[1],"size":row[2],"maxstock":row[3],"registration":row[4]} for row in rows]
+    return {'results':result}
 
 @router.get("/mod_code={model_code}")
 async def selectAll(model_code : int):

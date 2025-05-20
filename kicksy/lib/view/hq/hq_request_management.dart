@@ -16,7 +16,7 @@ class _HqRequestManagementState extends State<HqRequestManagement> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-
+      
       body: Center(
         child: FutureBuilder(
           future: handler.queryManagement(),
