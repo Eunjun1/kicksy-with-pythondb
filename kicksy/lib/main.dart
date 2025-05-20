@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:kicksy/view/hq/hq_document.dart';
+import 'package:kicksy/view/hq/hq_insert.dart';
 import 'package:kicksy/view/hq/hq_main.dart';
+import 'package:kicksy/view/hq/hq_order_query.dart';
 
 import 'package:kicksy/view/user/login.dart';
 import 'package:kicksy/view/user/payment.dart';
-import 'package:kicksy/view/user/usermain.dart';
+import 'package:kicksy/view/user/signup.dart';
 import 'package:kicksy/vm/database_handler.dart';
 
 void main() {

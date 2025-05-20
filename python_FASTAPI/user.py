@@ -13,6 +13,18 @@ def connect():
         db="kicksy",
         charset="utf8",
     )
+@router.get("/")
+async def selectAll():
+
+    conn = connect()
+    curs = conn.cursor()
+
+    curs.execute("select * from user")
+    rows = curs.fetchall()
+    conn.close()
+
+    result = [{"email":row[0],"password":row[1],"phone":row[2],"address":row[3],"signupdata":row[4],"sex" : row[5]} for row in rows]
+    return {'results':result}
 
 
 
@@ -47,13 +59,13 @@ async def insertUser(email : str = Form(...), password : str = Form(...), phone 
         return {'result' : 'Error'}
 
 @router.post("/update") 
-async def updateUser(password : str = Form(...), phone : str = Form(...), address : str = Form(...), sex : str= Form(...), email : str=Form(...)):
+async def updateUser(password : str = Form(...), phone : str = Form(...), sex : str= Form(...), email : str=Form(...)):
     conn = connect()
     curs = conn.cursor()
     
     try : 
-        sql = "update user set password = %s, phone = %s, address = %s, sex = %s where email = %s"
-        curs.execute(sql, ())
+        sql = "update user set password = %s, phone = %s, sex = %s where email = %s"
+        curs.execute(sql, (password,phone,sex,email))
         conn.commit()
         conn.close()
         return {'result' : 'OK'}

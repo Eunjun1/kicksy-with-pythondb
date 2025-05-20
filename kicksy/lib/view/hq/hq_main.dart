@@ -26,10 +26,7 @@ class _HqMainState extends State<HqMain> {
   List employeeList = [];
   List documentList = [];
   List orderyingList = [];
-  var value = 1;
-  //= Get.arguments[0] ?? "__";
-
-  ///
+  var value = Get.arguments[0] ?? "__";
   late String dropDownValue;
 
   @override
@@ -37,9 +34,9 @@ class _HqMainState extends State<HqMain> {
     super.initState();
     productList = ['제품 목록', '발주 목록'];
     dropDownValue = productList[0];
+    getJSONDateEmp();
     getJSONDataModel();
     getJSONDataOdy();
-    getJSONDateEmp();
   }
 
   getJSONDataModel() async {
@@ -56,13 +53,14 @@ class _HqMainState extends State<HqMain> {
 
   getJSONDateEmp() async {
     var responseEmp = await http.get(
-      Uri.parse('http://127.0.0.1:8000/employee/1'),
+      Uri.parse('http://127.0.0.1:8000/employee/${int.parse(value)}'),
     );
     employeeList.clear();
     employeeList.addAll(
       json.decode(utf8.decode(responseEmp.bodyBytes))['results'],
     );
     setState(() {});
+    print(employeeList);
   }
 
   getJSONDataOdy() async {
@@ -123,7 +121,7 @@ class _HqMainState extends State<HqMain> {
                       Row(
                         children: [
                           SizedBox(
-                            width: 250,
+                            width: 230,
                             child: DropdownButton(
                               value: dropDownValue,
                               items:
@@ -138,7 +136,7 @@ class _HqMainState extends State<HqMain> {
                                             padding: const EdgeInsets.fromLTRB(
                                               0,
                                               0,
-                                              150,
+                                              130,
                                               0,
                                             ),
                                             child: Text(value),
@@ -155,11 +153,13 @@ class _HqMainState extends State<HqMain> {
                           ),
                           Padding(
                             padding: const EdgeInsets.only(left: 10),
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Get.to(HqRequestList(), arguments: [value]);
-                              },
-                              child: Text('주문내역'),
+                            child: SizedBox(
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Get.to(HqRequestList(), arguments: [value]);
+                                },
+                                child: Text('주문내역',),
+                              ),
                             ),
                           ),
                         ],
@@ -188,18 +188,34 @@ class _HqMainState extends State<HqMain> {
                                               "http://127.0.0.1:8000/image/view/name=${modelList[index]['name']}&img_num=0?t=${DateTime.now().millisecondsSinceEpoch}",
                                               width: 100,
                                             ),
-                                            Column(
-                                              children: [
-                                                Text(
-                                                  '모델명 : ${modelList[index]['name']}',
-                                                ),
-                                                Text(
-                                                  '제조사 : ${modelList[index]['company']}',
-                                                ),
-                                                Text(
-                                                  '가격 : ${modelList[index]['saleprice']}',
-                                                ),
-                                              ],
+                                            Padding(
+                                              padding: const EdgeInsets.only(left: 20.0),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  SizedBox(
+                                                    width: 200,
+                                                    child: Text(
+                                                      '모델명 : ${modelList[index]['name']}',
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                    width: 200,
+                                                    child: Text(
+                                                      '제조사 : ${modelList[index]['company']}',
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                    width: 200,
+                                                    child: Text(
+                                                      '가격 : ${modelList[index]['saleprice']}',
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                             // FutureBuilder(
                                             //   future: handler.queryRequestWithProductWithModel(snapshot.data![index].model.code!),

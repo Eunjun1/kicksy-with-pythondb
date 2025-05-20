@@ -27,18 +27,51 @@ async def selectAll():
     result = [{"mod_code":row[0],"image_num":row[1],"name":row[2],"category":row[3],"company":row[4],"color":row[5],"saleprice":row[6]} for row in rows]
     return {'results':result}
 
-@router.get("/select/company")
-async def selectAll():
+
+@router.get("/select/new")
+async def selectNew():
 
     conn = connect()
     curs = conn.cursor()
 
-    curs.execute("select company from model group by company")
+    curs.execute('''SELECT category,company,name
+        FROM product p, model m
+        WHERE p.model_code = m.mod_code
+        AND p.registration in (select max(registration)
+        from product p, model m
+        WHERE p.model_code = m.mod_code)''')
+    rows = curs.fetchall()
+    conn.close()
+
+    result = [{"category":row[0],"company":row[1],"name":row[2]} for row in rows]
+    return {'results':result}
+
+@router.get("/where/{where}")
+async def selectAll(where:str):
+
+    conn = connect()
+    curs = conn.cursor()
+
+    curs.execute(f"select * from model {where}")
+    rows = curs.fetchall()
+    conn.close()
+
+    result = [{"mod_code":row[0],"image_num":row[1],"name":row[2],"category":row[3],"company":row[4],"color":row[5],"saleprice":row[6]} for row in rows]
+    return {'results':result}
+
+@router.get("/companys")
+async def selectcompany():
+    conn = connect()
+    curs = conn.cursor()
+
+    curs.execute(f"select company from model group by company")
     rows = curs.fetchall()
     conn.close()
 
     result = [{"company":row[0]} for row in rows]
     return {'results':result}
+
+
 
 # -- 회사별 제품 검색
 @router.get("/company={company}")
@@ -55,7 +88,7 @@ async def selectModelWithCompany(company : str):
     return {'results':result}
 # -- model 코드로 검색 --
 @router.get("/mod_code={mod_code}")
-async def selectModel(mod_code: int):
+async def selectModelcode(mod_code: int):
 
     conn = connect()
     curs = conn.cursor()
@@ -75,8 +108,8 @@ async def selectModel(name : str = '', company : str = ''):
     sql = """select * from kicksy.model as m
     join kicksy.image as i on  i.img_num = m.image_num and m.name = i.model_name 
     where m.name like %s and m.company like %s"""
-    search_name = f"%{name}%" if name else "%"
-    search_company = f"%{company}%" if company else "%"
+    search_name = f"%{name}%" if name != '' else "%"
+    search_company = f"%{company}%" if company != '' else "%"
     curs.execute(sql, (search_name,search_company))
     rows = curs.fetchall()
     conn.close()
