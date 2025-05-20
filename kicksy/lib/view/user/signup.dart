@@ -150,15 +150,11 @@ class _SignupState extends State<Signup> {
                                         )
                                         : Text(
                                           '사용 가능한 아이디입니다.',
-                                          style: TextStyle(
-                                            color: Colors.green,
-                                          ),
-                                          )
+                                          style: TextStyle(color: Colors.green),
+                                        )
                                     : Text(
                                       '사용 가능한 아이디입니다.',
-                                      style: TextStyle(
-                                            color: Colors.green,
-                                          ),
+                                      style: TextStyle(color: Colors.green),
                                     ),
                           ),
                         ],
@@ -386,8 +382,7 @@ class _SignupState extends State<Signup> {
                             userDetail_AddressController.text.isEmpty ||
                             userIDController.text.isEmpty ||
                             userPWController.text.isEmpty ||
-                            userPhoneController.text.isEmpty
-                            ) {
+                            userPhoneController.text.isEmpty) {
                           Get.snackbar(
                             "오류",
                             "정보 입력란을 확인 해주세요.",
@@ -445,25 +440,24 @@ class _SignupState extends State<Signup> {
   // }
 
   insertUser() async {
-    
-      var request = http.MultipartRequest(
-        "POST", 
-        Uri.parse('http://127.0.0.1:8000/user/insert'),
-      );
-      request.fields['email'] = userIDController.text;
-      request.fields['password'] = userPWController.text;
-      request.fields['phone'] = userPhoneController.text;
-      request.fields['address'] = userAddressController.text + userDetail_AddressController.text;
-      request.fields['signupdata'] = DateTime.now().toString();
-      request.fields['sex'] = dropDownValue;  
-      var res = await request.send();
+    var request = http.MultipartRequest(
+      "POST",
+      Uri.parse('http://127.0.0.1:8000/user/insert'),
+    );
+    request.fields['email'] = userIDController.text;
+    request.fields['password'] = userPWController.text;
+    request.fields['phone'] = userPhoneController.text;
+    request.fields['address'] =
+        userAddressController.text + userDetail_AddressController.text;
+    request.fields['signupdata'] = DateTime.now().toString();
+    request.fields['sex'] = dropDownValue;
+    var res = await request.send();
 
-      if(res.statusCode == 200){
-        Get.snackbar('완', '완');
-      }else{
-        Get.snackbar('X', 'X');
-      }
-      setState(() {});
-    
+    if (res.statusCode == 200) {
+      Get.snackbar('완', '완');
+    } else {
+      Get.snackbar('X', 'X');
     }
+    setState(() {});
+  }
 }

@@ -6,6 +6,7 @@ import 'package:kicksy/view/hq/hq_main.dart';
 import 'package:kicksy/view/user/login.dart';
 import 'package:kicksy/view/user/payment.dart';
 import 'package:kicksy/view/user/signup.dart';
+import 'package:kicksy/view/user/usermain.dart';
 import 'package:kicksy/vm/database_handler.dart';
 
 void main() {
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         fontFamily: 'Pretendard',
       ),
-      home: const HqMain(),
+      home: const Usermain(),
     );
   }
 }
