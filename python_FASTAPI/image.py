@@ -29,6 +29,7 @@ async def selectMax(model_name: str):
         result = [{"img_num":row[0]} for row in rows]
         return {'results':result}
 
+
 @router.get("/view/name={model_name}&img_num={img_num}")
 async def selectOne(model_name: str, img_num: int):
     try: 
