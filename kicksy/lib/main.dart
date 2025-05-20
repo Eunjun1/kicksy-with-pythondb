@@ -7,6 +7,7 @@ import 'package:kicksy/view/hq/hq_order_query.dart';
 
 import 'package:kicksy/view/user/login.dart';
 import 'package:kicksy/view/user/payment.dart';
+import 'package:kicksy/view/user/purchase_list.dart';
 import 'package:kicksy/view/user/signup.dart';
 import 'package:kicksy/vm/database_handler.dart';
 

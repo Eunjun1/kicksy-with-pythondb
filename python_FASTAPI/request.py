@@ -15,17 +15,25 @@ def connect():
 
 
 
-@router.get("/email={prod_code}")
-async def selectAll(prod_code : str):
-
+@router.get("/req={req_num}")
+async def selectAll(req_num : int):
     conn = connect()
     curs = conn.cursor()
+    curs.execute("select m.name,m.saleprice from request r,  model m , product p  where r.product_prod_code = p.prod_code and p.model_code = m.mod_code and r.req_num = %s",(req_num,))
+    rows = curs.fetchall()
+    conn.close()
+    result = [{"name" : row[0], "price" : row[1]} for row in rows]
+    return {'results':result}
 
-    curs.execute("select * from request where prod_code = %s",(prod_code,))
+@router.get("/email={email}")
+async def selectAll(email : str):
+    conn = connect()
+    curs = conn.cursor()
+    curs.execute("select * from request r,  model m , product p  where r.product_prod_code = p.prod_code and p.model_code = m.mod_code and user_email = %s",(email,))
     rows = curs.fetchall()
     conn.close()
 
-    result = [{"req_num":row[0],"prod_code":row[1],"product_prod_code":row[2],"store_str_code":row[3],"req_type":row[4],"req_date":row[5],"req_count":row[6],"reason":row[7]} for row in rows]
+    result = [{"req_num":row[0],"user_email":row[1],"product_prod_code":row[2],"store_str_code":row[3],"req_type":row[4],"req_date":row[5],"req_count":row[6],"reason":row[7],"name":row[10],"price":row[14]} for row in rows]
     return {'results':result}
 
 @router.post("/insert")
