@@ -301,7 +301,8 @@ class _PurchaseState extends State<Purchase> {
                                   itemCount: product.length,
                                   itemBuilder: (context, index) {
                                     final isSelected =
-                                        productCode == product[index]['code'];
+                                        productCode ==
+                                        product[index]['prod_code'];
 
                                     return SizedBox(
                                       width: 95,

@@ -72,7 +72,7 @@ async def selectOrdDocEmp(doc_code : int):
     conn.close()
 
     result = [{"ody_num":row[0],"proposer":row[13],"title":row[14],"ody_date":row[5],"prod_code":row[3],"ody_count":row[6],"ody_type":row[4]} for row in rows]
-    return {'results':result}    return {'results':result}
+    return {'results':result}    
 
 @router.post("/insert")
 async def insert(proposer : str = Form(...), title : str = Form(...), contents : str = Form(...)):
