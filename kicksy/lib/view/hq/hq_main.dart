@@ -67,7 +67,7 @@ class _HqMainState extends State<HqMain> {
 
   getJSONDataOdy() async {
     var responseOdy = await http.get(
-      Uri.parse('http://127.0.0.1:8000/orderying'),
+      Uri.parse('http://127.0.0.1:8000/orderying/list/view'),
     );
     orderyingList.clear();
     orderyingList.addAll(
@@ -149,6 +149,7 @@ class _HqMainState extends State<HqMain> {
                                   }).toList(),
                               onChanged: (String? value) {
                                 dropDownValue = value!;
+                                view = false;
                                 setState(() {});
                               },
                             ),
@@ -271,12 +272,7 @@ class _HqMainState extends State<HqMain> {
                                       shrinkWrap: T,
                                       itemCount: orderyingList.length,
                                       itemBuilder: (context, index) {
-                                        if (view == false) {
-                                          getJSONDataDoc(
-                                            orderyingList[index]['doc_code'],
-                                          );
-                                        }
-                                        return documentList.isEmpty
+                                        return orderyingList.isEmpty
                                             ? Center(
                                               child:
                                                   CircularProgressIndicator(),
@@ -301,13 +297,13 @@ class _HqMainState extends State<HqMain> {
                                                           .toString(),
                                                     ),
                                                     Text(
-                                                      documentList[0]['title'],
+                                                      orderyingList[index]['title'],
                                                     ),
                                                     Text(
-                                                      documentList[0]['proposer'],
+                                                      orderyingList[index]['proposer'],
                                                     ),
                                                     Text(
-                                                      orderyingList[index]['ody_date']
+                                                      orderyingList[index]['date']
                                                           .toString()
                                                           .substring(0, 10),
                                                     ),

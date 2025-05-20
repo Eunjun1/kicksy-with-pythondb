@@ -44,6 +44,19 @@ async def selectAll(ody_num : int):
     result = [{"ody_num":row[0],"emp_code":row[1],"doc_code":row[2],"prod_code":row[3],"ody_type":row[4],"ody_date":row[5],"ody_count":row[6],"reject_reason":row[7]} for row in rows]
     return {'results':result}
 
+@router.get("/list/view")
+async def selectAll():
+
+    conn = connect()
+    curs = conn.cursor()
+
+    curs.execute("select * from orderying o, document d where o.doc_code = d.doc_code")
+    rows = curs.fetchall()
+    conn.close()
+
+    result = [{"ody_num":row[0],"emp_code":row[1],"doc_code":row[2],"prod_code":row[3],"ody_type":row[4],"ody_date":row[5],"ody_count":row[6],"reject_reason":row[7],"proposer":row[9],"title":row[10],"date":row[12]} for row in rows]
+    return {'results':result}
+
 
 @router.post("/insert")
 async def insert(emp_code:int=Form(...),doc_code:int=Form(...),prod_code:int=Form(...),ody_type:int=Form(...),ody_date:str=Form(...),ody_count:int=Form(...),reject_reason:str=Form(...)):
