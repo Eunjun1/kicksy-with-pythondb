@@ -14,6 +14,20 @@ def connect():
     )
 
 
+@router.get("/selectMax")
+async def selectMax():
+
+    conn = connect()
+    curs = conn.cursor()
+
+    curs.execute("select max(mod_code) from model")
+    rows = curs.fetchall()
+    conn.close()
+
+    result = [{"max":row[0]} for row in rows]
+    return {'results':result}
+
+
 @router.get("/selectAll")
 async def selectAll():
 
@@ -86,6 +100,21 @@ async def selectModelWithCompany(company : str):
 
     result = [{"mod_code":row[0],"image_num":row[1],"name":row[2],"category":row[3],"company":row[4],"color":row[5],"saleprice":row[6]} for row in rows]
     return {'results':result}
+
+
+@router.get("/category={category}")
+async def selectModelWithCategory(category : str):
+
+    conn = connect()
+    curs = conn.cursor()
+
+    curs.execute("select * from model where category = %s",(category,))
+    rows = curs.fetchall()
+    conn.close()
+
+    result = [{"mod_code":row[0],"image_num":row[1],"name":row[2],"category":row[3],"company":row[4],"color":row[5],"saleprice":row[6]} for row in rows]
+    return {'results':result}
+
 # -- model 코드로 검색 --
 @router.get("/mod_code={mod_code}")
 async def selectModelcode(mod_code: int):
@@ -94,6 +123,20 @@ async def selectModelcode(mod_code: int):
     curs = conn.cursor()
 
     curs.execute("select * from model where mod_code = %s",(mod_code,))
+    rows = curs.fetchall()
+    conn.close()
+
+    result = [{"mod_code":row[0],"image_num":row[1],"name":row[2],"category":row[3],"company":row[4],"color":row[5],"saleprice":row[6]} for row in rows]
+    return {'results':result}
+
+
+@router.get("/name={name}")
+async def selectModelname(name: str):
+
+    conn = connect()
+    curs = conn.cursor()
+
+    curs.execute("select * from model where name = %s",(name,))
     rows = curs.fetchall()
     conn.close()
 

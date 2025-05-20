@@ -19,20 +19,20 @@ class _HqRequestManagementState extends State<HqRequestManagement> {
       
       body: Center(
         child: FutureBuilder(
-          future: handler.queryManagement(), 
+          future: handler.queryManagement(),
           builder: (context, snapshot) {
-            if(snapshot.hasData){
+            if (snapshot.hasData) {
               return ListView.builder(
                 itemCount: snapshot.data!.length,
                 itemBuilder: (context, index) {
-                  return Card(
-                    child: Column(children: [Text('data')],),
-                  );
-                },);
+                  return Card(child: Column(children: [Text('data')]));
+                },
+              );
             } else {
               return CircularProgressIndicator();
             }
-          },),
+          },
+        ),
       ),
     );
   }

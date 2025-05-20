@@ -209,22 +209,26 @@ class _LoginState extends State<Login> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
+                        bool empidvalue = false;
                         bool idvalue = userId.contains(
                           userIDeditingController.text,
                         );
                         bool pwvalue = userPw.contains(
                           userPWeditingController.text,
                         );
-                        bool empidvalue = empId.contains(
-                          int.parse(userIDeditingController.text),
-                        );
+                        if (idvalue) {
+                        } else {
+                          empidvalue = empId.contains(
+                            int.parse(userIDeditingController.text),
+                          );
+                        }
                         bool emppwvalue = empPw.contains(
                           userPWeditingController.text,
                         );
                         // print(idvalue);
                         // print(pwvalue);
-                        print(userIDeditingController.text);
-                        print(empidvalue);
+                        // print(userIDeditingController.text);
+                        // print(empidvalue);
                         // print(emppwvalue);
                         if (idvalue && pwvalue) {
                           Get.to(

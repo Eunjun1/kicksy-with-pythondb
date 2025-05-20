@@ -1,10 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kicksy/model/images.dart';
 import 'package:kicksy/model/model.dart';
 import 'package:kicksy/model/product_with_model.dart';
 import 'package:kicksy/view/user/payment.dart';
-
+import 'package:http/http.dart' as http;
 import 'package:kicksy/vm/database_handler.dart';
 import 'package:simple_gesture_detector/simple_gesture_detector.dart';
 
@@ -17,57 +19,73 @@ class Purchase extends StatefulWidget {
 
 class _PurchaseState extends State<Purchase> {
   DatabaseHandler handler = DatabaseHandler();
-  late List<ProductWithModel> data;
-  late List<Images> imageData;
+  List data = [];
+  List product = [];
+  List count = [];
   late int imageCurrent;
   late int buyCount;
-  late List<Model> sameCategory;
+  List categorys = [];
   late int productCode;
   late int selectedSize;
-  String modelName = Get.arguments[0] ?? "__";
-  String userId = Get.arguments[1];
+  String pname = Get.arguments[0] ?? "__";
+  String userId = Get.arguments[1] ?? "__";
+  String modelImage = "";
 
   @override
   void initState() {
     super.initState();
-    data = [];
-    imageData = [];
-    sameCategory = [];
+    getData();
     imageCurrent = 0;
     buyCount = 1;
     productCode = 0;
     selectedSize = 0;
-    fetchAllData();
   }
 
-  Future<void> fetchAllData() async {
-    await fetchData();
-    await fetchImageData();
-
-    await fetchsameCategory(); // data[0] 접근은 fetchData가 끝난 뒤에만
-    setState(() {});
+  getData() async {
+    await getJSONDataModel(pname);
+    await getJOSONDataProd(data[0]['mod_code']);
+    await getJSONDataImg(pname);
+    await getJSONDataCategory(data[0]['category']);
+    modelImage =
+        await 'http://127.0.0.1:8000/image/view/name=$pname&img_num=${count[imageCurrent]['img_num']}?t=${DateTime.now().millisecondsSinceEpoch}';
   }
 
-  Future<void> fetchData() async {
-    List<ProductWithModel> fetchData = await handler.queryProductwithModel(
-      modelName,
+  getJSONDataModel(String name) async {
+    var responseModel = await http.get(
+      Uri.parse('http://127.0.0.1:8000/model/name=$name'),
     );
-    data = fetchData;
+    data.clear();
+    data.addAll(json.decode(utf8.decode(responseModel.bodyBytes))['results']);
     setState(() {});
   }
 
-  Future<void> fetchImageData() async {
-    List<Images> fetchImageData = await handler.queryImages(modelName);
-
-    imageData = fetchImageData;
-    setState(() {});
-  }
-
-  Future<void> fetchsameCategory() async {
-    List<Model> fetchData = await handler.queryModelWhereCategory(
-      data[0].model.category,
+  getJOSONDataProd(int code) async {
+    var responseProd = await http.get(
+      Uri.parse('http://127.0.0.1:8000/product/mod_code=$code'),
     );
-    sameCategory = fetchData;
+    product.clear();
+    product.addAll(json.decode(utf8.decode(responseProd.bodyBytes))['results']);
+    setState(() {});
+  }
+
+  getJSONDataImg(String name) async {
+    var responsecount = await http.get(
+      Uri.parse('http://127.0.0.1:8000/image/name=$name'),
+    );
+    count.clear();
+    count.addAll(json.decode(utf8.decode(responsecount.bodyBytes))['results']);
+    setState(() {});
+  }
+
+  getJSONDataCategory(String category) async {
+    var responsecount = await http.get(
+      Uri.parse('http://127.0.0.1:8000/model/category=$category'),
+    );
+    categorys.clear();
+    categorys.addAll(
+      json.decode(utf8.decode(responsecount.bodyBytes))['results'],
+    );
+
     setState(() {});
   }
 
@@ -88,7 +106,7 @@ class _PurchaseState extends State<Purchase> {
       ),
 
       body:
-          data.isEmpty && imageData.isEmpty
+          data.isEmpty && product.isEmpty
               ? Center(child: CircularProgressIndicator()) // 로딩 중
               : Stack(
                 children: [
@@ -105,7 +123,7 @@ class _PurchaseState extends State<Purchase> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                data[0].model.name,
+                                data[0]['name'],
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -118,7 +136,7 @@ class _PurchaseState extends State<Purchase> {
                               Padding(
                                 padding: const EdgeInsets.fromLTRB(0, 0, 0, 4),
                                 child: Text(
-                                  data[0].model.company,
+                                  data[0]['company'],
                                   style: TextStyle(
                                     fontWeight: FontWeight.w700,
                                     color: Colors.black,
@@ -128,7 +146,7 @@ class _PurchaseState extends State<Purchase> {
                               ),
 
                               Text(
-                                data[0].model.category,
+                                data[0]['category'],
                                 style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   color: Colors.black,
@@ -136,7 +154,7 @@ class _PurchaseState extends State<Purchase> {
                                 ),
                               ),
 
-                              imageData.isEmpty || data.isEmpty
+                              count.isEmpty || data.isEmpty
                                   ? SizedBox(
                                     width: 346,
                                     height: 250,
@@ -147,12 +165,12 @@ class _PurchaseState extends State<Purchase> {
                                   : ClipRRect(
                                     borderRadius: BorderRadius.circular(30),
                                     child: SimpleGestureDetector(
-                                      onHorizontalSwipe: (direction) {
+                                      onHorizontalSwipe: (direction) async {
                                         direction == SwipeDirection.left
                                             ? {
                                               imageCurrent += 1,
                                               if (imageCurrent >
-                                                  imageData.length - 1)
+                                                  count.length - 1)
                                                 {
                                                   imageCurrent = 0,
                                                   setState(() {}),
@@ -163,11 +181,12 @@ class _PurchaseState extends State<Purchase> {
                                               if (imageCurrent < 0)
                                                 {
                                                   imageCurrent =
-                                                      imageData.length - 1,
+                                                      count.length - 1,
                                                   setState(() {}),
                                                 },
                                             };
-
+                                        modelImage =
+                                            await 'http://127.0.0.1:8000/image/view/name=$pname&img_num=${count[imageCurrent]['img_num']}?t=${DateTime.now().millisecondsSinceEpoch}';
                                         setState(() {});
                                       },
 
@@ -183,9 +202,7 @@ class _PurchaseState extends State<Purchase> {
                                           height: 250,
                                           decoration: BoxDecoration(
                                             image: DecorationImage(
-                                              image: MemoryImage(
-                                                imageData[imageCurrent].image,
-                                              ),
+                                              image: NetworkImage(modelImage),
                                               fit: BoxFit.cover,
                                             ),
                                           ),
@@ -195,7 +212,7 @@ class _PurchaseState extends State<Purchase> {
                                   ),
 
                               Text(
-                                '₩ ${data[0].model.saleprice}',
+                                '₩ ${data[0]['saleprice']}',
                                 style: TextStyle(
                                   fontSize: 26,
                                   fontWeight: FontWeight.w700,
@@ -223,12 +240,15 @@ class _PurchaseState extends State<Purchase> {
                                 height: 70,
                                 child: ListView.builder(
                                   scrollDirection: Axis.horizontal,
-                                  itemCount: sameCategory.length,
+                                  itemCount: categorys.length,
                                   itemBuilder: (context, index) {
                                     return GestureDetector(
                                       onTap: () {
-                                        modelName = sameCategory[index].name;
-                                        fetchAllData();
+                                        pname = categorys[index]['name'];
+                                        imageCurrent = 0;
+                                        modelImage =
+                                            'http://127.0.0.1:8000/image/view/name=$pname&img_num=$imageCurrent?t=${DateTime.now().millisecondsSinceEpoch}';
+                                        getData();
                                         setState(() {});
                                       },
 
@@ -238,7 +258,7 @@ class _PurchaseState extends State<Purchase> {
                                         child: Card(
                                           child: Center(
                                             child: Text(
-                                              sameCategory[index].color,
+                                              categorys[index]['color'],
                                               style: TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w700,
@@ -278,10 +298,10 @@ class _PurchaseState extends State<Purchase> {
                                       ),
 
                                   scrollDirection: Axis.horizontal,
-                                  itemCount: data.length,
+                                  itemCount: product.length,
                                   itemBuilder: (context, index) {
                                     final isSelected =
-                                        productCode == data[index].product.code;
+                                        productCode == product[index]['code'];
 
                                     return SizedBox(
                                       width: 95,
@@ -291,9 +311,9 @@ class _PurchaseState extends State<Purchase> {
                                           onPressed: () {
                                             setState(() {
                                               selectedSize =
-                                                  data[index].product.size;
+                                                  product[index]['size'];
                                               productCode =
-                                                  data[index].product.code!;
+                                                  product[index]['prod_code']!;
                                             });
                                           },
                                           style: ElevatedButton.styleFrom(
@@ -307,7 +327,7 @@ class _PurchaseState extends State<Purchase> {
                                                     : Color(0xffC7C1C1),
                                           ),
                                           child: Text(
-                                            data[index].product.size.toString(),
+                                            product[index]['size'].toString(),
                                             style: TextStyle(
                                               fontWeight: FontWeight.w700,
                                             ),
@@ -433,7 +453,7 @@ class _PurchaseState extends State<Purchase> {
                           ),
                         ),
                         child: Text(
-                          "₩ ${data[0].model.saleprice * buyCount}",
+                          "₩ ${data[0]['saleprice'] * buyCount}",
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w700,

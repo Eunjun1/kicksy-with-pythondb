@@ -30,15 +30,15 @@ class _UsermainState extends State<Usermain> {
   late TextEditingController searchController;
   int selectedIndex = -1;
   String where = ' ';
+  late String email;
 
-  var email = 1; //Get.arguments[0] ?? "__";
   var value = Get.arguments ?? "__";
-
   @override
   void initState() {
     super.initState();
     // handler = DatabaseHandler();
     searchController = TextEditingController();
+    email = value[0];
 
     getNewProd();
     getUserInfo(value[0]);
@@ -420,7 +420,7 @@ class _UsermainState extends State<Usermain> {
                                         Purchase(),
                                         arguments: [
                                           modList[index]['name'],
-                                          email,
+                                          value[0],
                                         ],
                                       ),
                                   child: SizedBox(
@@ -540,80 +540,84 @@ class _UsermainState extends State<Usermain> {
               ),
             ),
 
-            // drawer: Drawer(
-            //   child: ListView(
-            //     children: [
-            //       GestureDetector(
-            //         onTap:
-            //             () => Get.to(Userinfo(), arguments: [email])!.then((
-            //               value,
-            //             ) {
-            //               getUserInfo(email.toString());
-            //             }),
-            //         child: UserAccountsDrawerHeader(
-            //           currentAccountPicture: Transform.scale(
-            //             scale: 1.3,
-            //             child: Image.asset('images/kicksy_white.png'),
-            //           ),
+            drawer:
+                user.isEmpty
+                    ? Center(child: CircularProgressIndicator())
+                    : Drawer(
+                      child: ListView(
+                        children: [
+                          GestureDetector(
+                            onTap:
+                                () => Get.to(
+                                  Userinfo(),
+                                  arguments: [value[0]],
+                                )!.then((value) {
+                                  getUserInfo(email);
+                                }),
+                            child: UserAccountsDrawerHeader(
+                              currentAccountPicture: Transform.scale(
+                                scale: 1.3,
+                                child: Image.asset('images/kicksy_white.png'),
+                              ),
 
-            //           // otherAccountsPictures: [
-            //           //   CircleAvatar(backgroundImage: AssetImage('images/logo.png')),
-            //           //   CircleAvatar(backgroundImage: AssetImage('images/logo.png')),
-            //           // ],
-            //           accountName: Text(
-            //             user[0]['email'],
-            //             style: TextStyle(
-            //               fontWeight: FontWeight.bold,
-            //               color: Colors.white,
-            //             ),
-            //           ),
-            //           accountEmail: Text(
-            //             '전화번호 : ${user[0]['phone']}',
-            //             style: TextStyle(
-            //               fontWeight: FontWeight.bold,
-            //               color: Colors.white,
-            //             ),
-            //           ),
-            //           decoration: BoxDecoration(
-            //             color: Color(0xFFFFBF1F),
-            //             // borderRadius: BorderRadius.only(
-            //             //   bottomLeft: Radius.circular(40),
-            //             //   bottomRight: Radius.circular(40),
-            //             // ),
-            //           ),
-            //         ),
-            //       ),
-            //       ListTile(
-            //         leading: Icon(Icons.home_outlined),
-            //         title: Text(
-            //           '메인',
-            //           style: TextStyle(
-            //             fontSize: 17,
-            //             fontWeight: FontWeight.bold,
-            //           ),
-            //         ),
-            //         onTap: () {
-            //           Get.to(Usermain(), arguments: [email]);
-            //           // print('home is clicked');
-            //         },
-            //       ),
-            //       ListTile(
-            //         leading: Icon(Icons.list_alt_rounded),
-            //         title: Text(
-            //           '주문목록',
-            //           style: TextStyle(
-            //             fontSize: 17,
-            //             fontWeight: FontWeight.bold,
-            //           ),
-            //         ),
-            //         onTap: () {
-            //           Get.to(PurchaseList(), arguments: [email]);
-            //           // print('home is clicked');
-            //         },
-            //       ),
-            //     ],
-            //   ),
-            // ),
+                              // otherAccountsPictures: [
+                              //   CircleAvatar(backgroundImage: AssetImage('images/logo.png')),
+                              //   CircleAvatar(backgroundImage: AssetImage('images/logo.png')),
+                              // ],
+                              accountName: Text(
+                                user[0]['email'],
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              accountEmail: Text(
+                                '전화번호 : ${user[0]['phone']}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              decoration: BoxDecoration(
+                                color: Color(0xFFFFBF1F),
+                                // borderRadius: BorderRadius.only(
+                                //   bottomLeft: Radius.circular(40),
+                                //   bottomRight: Radius.circular(40),
+                                // ),
+                              ),
+                            ),
+                          ),
+                          ListTile(
+                            leading: Icon(Icons.home_outlined),
+                            title: Text(
+                              '메인',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            onTap: () {
+                              Get.to(Usermain(), arguments: [value[0]]);
+                              // print('home is clicked');
+                            },
+                          ),
+                          ListTile(
+                            leading: Icon(Icons.list_alt_rounded),
+                            title: Text(
+                              '주문목록',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            onTap: () {
+                              Get.to(PurchaseList(), arguments: [value[0]]);
+                              // print('home is clicked');
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
           ),
         );
   } //build

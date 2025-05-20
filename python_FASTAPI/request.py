@@ -44,6 +44,22 @@ async def insert(prod_code :str = Form(...), product_prod_code : int = Form(...)
         print("Error : ", ex)
         return {'result' : 'Error'}
     
+@router.post("/insertNew")
+async def insert(user_email:str = Form(...), product_prod_code : int = Form(...), store_str_code : int = Form(...), req_type : int = Form(...), req_count : int = Form(...), reason : str = Form(...)):
+    conn = connect()
+    curs = conn.cursor()
+
+    try : 
+        sql='insert into request(user_email,product_prod_code,store_str_code,req_type,req_date,req_count,reason) values (%s,%s,%s,%s,now(),%s,%s)'
+        curs.execute(sql,(user_email,product_prod_code,store_str_code,req_type,req_count,reason))
+        conn.commit()
+        conn.close()
+        return {'result' : 'OK'}
+    except Exception as ex :
+        conn.close()
+        print("Error : ", ex)
+        return {'result' : 'Error'}
+    
 @router.post('/update')
 async def update(req_num : int = Form(...),req_type : int = Form(...),reason : str = Form(...)) :
     try : 

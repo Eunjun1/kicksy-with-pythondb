@@ -1,10 +1,12 @@
-  import 'package:flutter/material.dart';
+  import 'dart:convert';
+
+import 'package:flutter/material.dart';
   import 'package:get/get.dart';
   import 'package:kicksy/model/product_with_model.dart';
   import 'package:kicksy/model/request.dart';
   import 'package:kicksy/view/user/mapview.dart';
   import 'package:kicksy/view/user/purchase_list.dart';
-
+import 'package:http/http.dart' as http;
   import 'package:kicksy/vm/database_handler.dart';
 
   class UserPayment extends StatefulWidget {
@@ -24,7 +26,9 @@
     late String userId;
     late int modelCode;
     late int selectedSize;
-    late List<ProductWithModel> model;
+    var model = Get.arguments[2];
+
+    List imageList = [];
 
     @override
     void initState() {
@@ -63,8 +67,16 @@
       userId = Get.arguments[3];
       modelCode = Get.arguments[0];
       selectedSize = Get.arguments[4];
-      model = List<ProductWithModel>.from(Get.arguments[2]);
+      // getImageJSONData(model[0]['name']);
     }
+
+    // getImageJSONData(String modelName) async {
+    //   var responseModel = await http.get(
+    //   Uri.parse('http://127.0.0.1:8000/get/$modelName'),
+    // );
+    // imageList.clear();
+    // imageList.addAll(json.decode(utf8.decode(responseModel.bodyBytes))['results']);
+    // }
 
     @override
     Widget build(BuildContext context) {
@@ -98,27 +110,19 @@
                   height: 100,
                   child: Row(
                     children: [
-                      FutureBuilder(
-                        future: databaseHandler.queryImages(model[0].model.name),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            return SizedBox(
+                            SizedBox(
                               width: 90,
                               height: 90,
 
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(20),
-                                child: Image.memory(
-                                  snapshot.data![0].image,
+                                child: Image.network(
+                                  'http://127.0.0.1:8000/image/view/name=${model[0]['name']}&img_num=0?t=${DateTime.now().millisecondsSinceEpoch}',
                                   fit: BoxFit.cover,
                                 ),
                               ),
-                            );
-                          } else {
-                            return Center(child: CircularProgressIndicator());
-                          }
-                        },
-                      ),
+                            ),
+                          
                       Padding(
                         padding: const EdgeInsets.only(left: 10.0),
                         child: Column(
@@ -128,7 +132,7 @@
                             SizedBox(
                               width: 190,
                               child: Text(
-                                '모델 : ${model[0].model.name}',
+                                '모델 : ${model[0]['name']}',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
@@ -139,7 +143,7 @@
                             SizedBox(
                               width: 190,
                               child: Text(
-                                '색상 : ${model[0].model.color}',
+                                '색상 : ${model[0]['color']}',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
@@ -215,7 +219,7 @@
                   Padding(
                     padding: const EdgeInsets.only(right: 40.0),
                     child: Text(
-                      '₩ ${count * model[0].model.saleprice}',
+                      '₩ ${count * model[0]['saleprice']}',
                       style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
                       textAlign: TextAlign.center,
                     ),
@@ -348,17 +352,37 @@
       );
     }
 
-    insertRequest() async{
-      // id와 product코드 argument가져와서 고치기
-      var insertreq = Request(
-        userId: userId,
-        productCode: model[0].product.code!,
-        storeCode: getStoreCode(),
-        type: 0,
-        date: DateTime.now().toString(),
-        count: count,
-      );
-      await databaseHandler.insertRequest(insertreq);
+    // insertRequest() async{
+    //   // id와 product코드 argument가져와서 고치기
+    //   var insertreq = Request(
+    //     userId: userId,
+    //     productCode: model[0].product.code!,
+    //     storeCode: getStoreCode(),
+    //     type: 0,
+    //     date: DateTime.now().toString(),
+    //     count: count,
+    //   );
+    //   await databaseHandler.insertRequest(insertreq);
+    // }
+
+    insertRequest()async{
+      var request = http.MultipartRequest(
+      "POST",
+      Uri.parse('http://127.0.0.1:8000/request/insertNew'),
+    );
+    request.fields['user_email'] = userId;
+    request.fields['product_prod_code'] = model[0]['mod_code'].toString();
+    request.fields['store_str_code'] = getStoreCode().toString();
+    request.fields['req_type'] = 0.toString();
+    request.fields['req_count'] = count.toString();
+    request.fields['reason'] = '';
+
+    var res = await request.send();
+    if (res.statusCode == 200) {
+      Get.snackbar('완', '완');
+    } else {
+      Get.snackbar('X', 'X');
+    }
     }
 
     getStoreCode() {
