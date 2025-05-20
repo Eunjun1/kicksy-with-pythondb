@@ -34,7 +34,7 @@ class _HqModelDetailState extends State<HqModelDetail> {
 
   getJSONDataModel(int code) async {
     var responseModel = await http.get(
-      Uri.parse('http://127.0.0.1:8000/model/mod_code=$code'),
+      Uri.parse('http://127.0.0.1:8000/model/$code'),
     );
     model.clear();
     model.addAll(json.decode(utf8.decode(responseModel.bodyBytes))['results']);
