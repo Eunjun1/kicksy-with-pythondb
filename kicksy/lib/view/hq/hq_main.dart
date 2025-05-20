@@ -38,6 +38,7 @@ class _HqMainState extends State<HqMain> {
     getJSONDateEmp();
     getJSONDataModel();
     getJSONDataOdy();
+    print(value);
   }
 
   getJSONDataModel() async {

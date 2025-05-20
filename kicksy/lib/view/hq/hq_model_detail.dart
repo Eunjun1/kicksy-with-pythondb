@@ -30,6 +30,7 @@ class _HqModelDetailState extends State<HqModelDetail> {
     getJSONDataImg(value[0]);
     modelImage = 'http://127.0.0.1:8000/image/view/name=${value[0]}&img_num=0';
   }
+  
 
   getJSONDataModel(int code) async {
     var responseModel = await http.get(
@@ -38,6 +39,7 @@ class _HqModelDetailState extends State<HqModelDetail> {
     model.clear();
     model.addAll(json.decode(utf8.decode(responseModel.bodyBytes))['results']);
     setState(() {});
+    print(model);
   }
 
   getJSONDataProd(int code) async {
@@ -47,6 +49,7 @@ class _HqModelDetailState extends State<HqModelDetail> {
     product.clear();
     product.addAll(json.decode(utf8.decode(responseProd.bodyBytes))['results']);
     setState(() {});
+    print(product);
   }
 
   getJSONDataImg(String name) async {
@@ -64,7 +67,10 @@ class _HqModelDetailState extends State<HqModelDetail> {
     return model.isEmpty & product.isEmpty & request.isEmpty & count.isEmpty
         ? Center(child: CircularProgressIndicator())
         : Scaffold(
-          body: SingleChildScrollView(
+          body: 
+          model.isEmpty & product.isEmpty & request.isEmpty & count.isEmpty
+          ?Center(child: CircularProgressIndicator())
+          :SingleChildScrollView(
             child: Column(
               children: [
                 SizedBox(height: 80),
@@ -79,7 +85,10 @@ class _HqModelDetailState extends State<HqModelDetail> {
                 ),
                 SizedBox(
                   height: 110,
-                  child: ListView.builder(
+                  child: 
+                  count.isEmpty 
+                  ? Center(child: CircularProgressIndicator())
+                  : ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: count.length,
                     itemBuilder: (context, index) {
@@ -104,9 +113,13 @@ class _HqModelDetailState extends State<HqModelDetail> {
                 Text('색상 : ${model[0]['color']}'),
                 Text('가격 : ${model[0]['saleprice'].toString()}'),
                 Text('사이즈 목록'),
+
                 SizedBox(
                   width: 300,
-                  child: GridView.builder(
+                  child: 
+                  product.isEmpty
+                  ?Center(child: CircularProgressIndicator())
+                  :GridView.builder(
                     padding: EdgeInsets.zero,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),

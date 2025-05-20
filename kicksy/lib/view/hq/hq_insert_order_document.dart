@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kicksy/model/document.dart';
 import 'package:kicksy/model/orderying.dart';
 import 'package:kicksy/vm/database_handler.dart';
+import 'package:http/http.dart' as http;
 
 class HqInsertOrderDocument extends StatefulWidget {
   const HqInsertOrderDocument({super.key});
@@ -27,12 +30,42 @@ class _HqInsertOrderDocumentState extends State<HqInsertOrderDocument> {
   TextEditingController odyDateCT = TextEditingController();
   TextEditingController odyCountCT = TextEditingController();
   TextEditingController rejectReasonCT = TextEditingController();
-  late int docNum;
+  late List docNum;
+  late List modCode;
+  var value = Get.arguments ?? "__";
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    docNum = 0;
+    docNum = [];
+    modCode = [];
+    getMaxData();
+  }
+
+  getMaxData() async{
+    var responseDoc = await http.get(
+      Uri.parse('http://127.0.0.1:8000/document/doc_code'),
+    );
+    docNum.clear();
+    docNum.addAll(
+      json.decode(utf8.decode(responseDoc.bodyBytes))['results'],
+    );
+    setState(() {});
+    print(docNum);
+    print(value);
+    print(docNum[0]['maxcode']);
+  }
+
+  changeNameForCode() async{
+    var responseDoc = await http.get(
+      Uri.parse('http://127.0.0.1:8000/model/namecode=${productCodeCT.text}'),
+    );
+    modCode.clear();
+    modCode.addAll(
+      json.decode(utf8.decode(responseDoc.bodyBytes))['results'],
+    );
+    setState(() {});
+    print(modCode);
   }
 
   @override
@@ -62,7 +95,7 @@ class _HqInsertOrderDocumentState extends State<HqInsertOrderDocument> {
                 border: Border.all(width: 1, color: Colors.black),
               ),
               width: MediaQuery.of(context).size.width - 50,
-              height: MediaQuery.of(context).size.height - 350,
+              height: MediaQuery.of(context).size.height - 300,
               // color:Color(0xFFffffff),
               child: SizedBox(
                 width: 250,
@@ -114,6 +147,7 @@ class _HqInsertOrderDocumentState extends State<HqInsertOrderDocument> {
                         ),
                       ),
                     ),
+
                     //제품번호
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
@@ -157,9 +191,15 @@ class _HqInsertOrderDocumentState extends State<HqInsertOrderDocument> {
               padding: const EdgeInsets.all(30.0),
               child: ElevatedButton(
                 onPressed: () {
-                  insertDocument();
-                  insertOrdering();
-                  Get.back();
+                  var value = Get.arguments[0];
+                  setState(() {
+                    insertDocument();
+                    insertOrderying();
+                    setState(() {
+                      
+                    });
+                  });
+                  print(value);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFFFFBF1F),
@@ -181,34 +221,44 @@ class _HqInsertOrderDocumentState extends State<HqInsertOrderDocument> {
     );
   }
 
-  insertDocument() async {
-    var insertdocument = Document(
-      propser: propserCT.text,
-      title: titleCT.text,
-      contents: contentCT.text,
-      date: DateTime.now().toString(),
-    );
-    await databaseHandler.insertDocument(insertdocument);
+
+  insertDocument() async { 
+      var request = http.MultipartRequest(
+        "POST",
+        Uri.parse('http://127.0.0.1:8000/document/insert'),
+      );
+      request.fields['proposer'] = propserCT.text;
+      request.fields['title'] = titleCT.text;
+      request.fields['contents'] = contentCT.text;
+      request.fields['date'] = DateTime.now().toString();
+      var res = await request.send();
+      if (res.statusCode == 200) {
+        Get.snackbar('완', '완');
+      } else {
+        Get.snackbar('X', 'X');
+      }
+      setState(() {});
   }
 
-  insertOrdering() async {
-    int prodNum = await databaseHandler.queryProductNum(productCodeCT.text);
-    await loadDocNum();
-
-    var insertorderying = Orderying(
-      employeeCode: int.parse(employeeCodeCT.text),
-      productCode: prodNum,
-      documentCode: docNum,
-      type: 0,
-      date: DateTime.now().toString(),
-      count: int.parse(odyCountCT.text),
-      rejectReason: rejectReasonCT.text,
-    );
-    await databaseHandler.insertOrdering(insertorderying);
-  }
-
-  Future<void> loadDocNum() async {
-    docNum = await databaseHandler.getDocumentNum();
-    setState(() {});
+  insertOrderying() async { 
+      await changeNameForCode();
+      var request = http.MultipartRequest(
+        "POST",
+        Uri.parse('http://127.0.0.1:8000/orderying/insert'),
+      );
+      request.fields['emp_code'] = value[0];
+      request.fields['doc_code'] = docNum[0]['maxcode'].toString();
+      request.fields['prod_code'] = modCode[0]['code'].toString();
+      request.fields['ody_type'] = 1.toString();
+      request.fields['ody_date'] = DateTime.now().toString();
+      request.fields['ody_count'] = odyCountCT.text;
+      request.fields['reject_reason'] = rejectReasonCT.text;
+      var res = await request.send();
+      if (res.statusCode == 200) {
+        Get.snackbar('완', '완');
+      } else {
+        Get.snackbar('X', 'X');
+      }
+      setState(() {});
   }
 }
