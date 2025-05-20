@@ -1,9 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kicksy/view/hq/hq_main.dart';
 import 'package:kicksy/view/user/signup.dart';
 import 'package:kicksy/view/user/usermain.dart';
-
+import 'package:http/http.dart' as http;
 import 'package:kicksy/vm/database_handler.dart';
 
 class Login extends StatefulWidget {
@@ -18,6 +20,12 @@ class _LoginState extends State<Login> {
   late TextEditingController userIDeditingController;
   late TextEditingController userPWeditingController;
   late DatabaseHandler handler;
+  List userId = [];
+  List userPw = [];
+  List user = [];
+  List empId = [];
+  List empPw = [];
+  List emp = [];
 
   @override
   void initState() {
@@ -25,6 +33,46 @@ class _LoginState extends State<Login> {
     handler = DatabaseHandler();
     userIDeditingController = TextEditingController();
     userPWeditingController = TextEditingController();
+    getuserJSONData();
+    getEmployeeJSONData();
+  }
+
+  getuserJSONData() async {
+    var url = Uri.parse('http://127.0.0.1:8000/user/');
+    var response = await http.get(url);
+
+    user.clear();
+    userId.clear();
+    userPw.clear();
+    user.addAll(json.decode(utf8.decode(response.bodyBytes))['results']);
+    setState(() {});
+    // print(userPw);
+    for (int i = 0; i < user.length; i++) {
+      userId.add(user[i]['email']);
+      userPw.add(user[i]['password']);
+    }
+    setState(() {});
+    // print(userId);
+    // print(userPw);
+  }
+
+  getEmployeeJSONData() async {
+    var url = Uri.parse('http://127.0.0.1:8000/employee/');
+    var response = await http.get(url);
+
+    empId.clear();
+    empPw.clear();
+    emp.clear();
+    emp.addAll(json.decode(utf8.decode(response.bodyBytes))['results']);
+    setState(() {});
+    // print(userPw);
+    for (int i = 0; i < emp.length; i++) {
+      empId.add(emp[i]['emp_code']);
+      empPw.add(emp[i]['password']);
+    }
+    setState(() {});
+    print(empId);
+    // print(empPw);
   }
 
   Future<void> _handleLogin() async {
@@ -40,7 +88,7 @@ class _LoginState extends State<Login> {
     final userList = await handler.querySignINUser(id);
     if (userList.isNotEmpty) {
       final user = userList.first;
-      if (user.password == pw) {
+      if (user.password == userPw) {
         Get.to(Usermain(), arguments: [user.email]);
         userIDeditingController.clear();
         userPWeditingController.clear();
@@ -160,7 +208,38 @@ class _LoginState extends State<Login> {
                     width: 346,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: _handleLogin,
+                      onPressed: () {
+                        bool idvalue = userId.contains(
+                          userIDeditingController.text,
+                        );
+                        bool pwvalue = userPw.contains(
+                          userPWeditingController.text,
+                        );
+                        bool empidvalue = empId.contains(
+                          int.parse(userIDeditingController.text),
+                        );
+                        bool emppwvalue = empPw.contains(
+                          userPWeditingController.text,
+                        );
+                        // print(idvalue);
+                        // print(pwvalue);
+                        print(userIDeditingController.text);
+                        print(empidvalue);
+                        // print(emppwvalue);
+                        if (idvalue && pwvalue) {
+                          Get.to(
+                            Usermain(),
+                            arguments: [userIDeditingController.text],
+                          );
+                        } else if (empidvalue && emppwvalue) {
+                          Get.to(
+                            HqMain(),
+                            arguments: [userIDeditingController.text],
+                          );
+                        } else {
+                          Get.snackbar('title', 'message');
+                        }
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFFFBF1F),
                         shape: RoundedRectangleBorder(
