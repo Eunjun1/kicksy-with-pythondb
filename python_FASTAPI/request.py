@@ -15,6 +15,17 @@ def connect():
 
 
 
+@router.get("/select")
+async def selectAll():
+    conn = connect()
+    curs = conn.cursor()
+    curs.execute("select * from request")
+    rows = curs.fetchall()
+    conn.close()
+    result = [{"name" : row[0], "price" : row[1]} for row in rows]
+    return {'results':result}
+
+
 @router.get("/req={req_num}")
 async def selectAll(req_num : int):
     conn = connect()
@@ -23,6 +34,16 @@ async def selectAll(req_num : int):
     rows = curs.fetchall()
     conn.close()
     result = [{"name" : row[0], "price" : row[1]} for row in rows]
+    return {'results':result}
+
+@router.get("/view/{where}")
+async def selectAll(where: str):
+    conn = connect()
+    curs = conn.cursor()
+    curs.execute(f"select * from request r,  model m , product p  where r.product_prod_code = p.prod_code and p.model_code = m.mod_code {where}")
+    rows = curs.fetchall()
+    conn.close()
+    result = [{"req_num" : row[0], "user_email" : row[1],"product_prod_code":row[2],"store_str_code":row[3],"req_type":row[4],"req_date":row[5],"req_count":row[6],"reason":row[7],"name":row[10],"size":row[17]} for row in rows]
     return {'results':result}
 
 @router.get("/email={email}")
@@ -74,7 +95,7 @@ async def update(req_num : int = Form(...),req_type : int = Form(...),reason : s
         conn = connect()
         curs = conn.cursor()
         sql = 'update request set req_type=%s, req_date=now(), reason=%s where req_num=%s'
-        curs.execute(sql, (req_type, reason,req_num))
+        curs.execute(sql, (req_type,reason,req_num))
         conn.commit()
         conn.close()
         return {"result" : 'OK'}

@@ -324,7 +324,10 @@ class _HqMainState extends State<HqMain> {
       floatingActionButton:
           dropDownValue == '제품 목록'
               ? IconButton(
-                onPressed: () => Get.to(() => HqInsert()),
+                onPressed:
+                    () => Get.to(
+                      () => HqInsert(),
+                    )!.then((value) => getJSONDataModel()),
                 icon: Icon(Icons.add),
               )
               : IconButton(

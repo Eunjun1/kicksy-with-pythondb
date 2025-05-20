@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kicksy/model/management.dart';
 import 'package:kicksy/model/request.dart';
 import 'package:kicksy/vm/database_handler.dart';
+import 'package:http/http.dart' as http;
 
 class HqRequestList extends StatefulWidget {
   const HqRequestList({super.key});
@@ -20,9 +23,10 @@ class _HqRequestListState extends State<HqRequestList> {
   late int storeCode;
   late String modelName;
   late int modelSize;
+  List requsetList = [];
+  String wheres = ' ';
 
   var value = Get.arguments[0] ?? "__";
-
   @override
   void initState() {
     super.initState();
@@ -55,10 +59,22 @@ class _HqRequestListState extends State<HqRequestList> {
       '중랑지점',
     ];
     selectedStore = '지점';
-    storeName = '';
+    storeName = ' ';
     storeCode = 0;
-    modelName = '';
+    modelName = ' ';
     modelSize = 0;
+    getRequest(wheres);
+  }
+
+  getRequest(String where) async {
+    var responseOdy = await http.get(
+      Uri.parse('http://127.0.0.1:8000/request/view/${where}'),
+    );
+    requsetList.clear();
+    requsetList.addAll(
+      json.decode(utf8.decode(responseOdy.bodyBytes))['results'],
+    );
+    setState(() {});
   }
 
   getStoreName(int storeCode) {
@@ -244,113 +260,118 @@ class _HqRequestListState extends State<HqRequestList> {
                   }).toList(),
               onChanged: (String? value) {
                 selectedStore = value!;
-                getStoreCode(selectedStore);
+                if (selectedStore == "지점") {
+                  wheres = ' ';
+                } else {
+                  getStoreCode(selectedStore);
+                  wheres = 'and store_str_code = $storeCode';
+                }
+                getRequest(wheres);
                 setState(() {});
               },
             ),
-            FutureBuilder(
-              future: databaseHandler.queryRequestList(storeCode),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return Expanded(
-                    child: ListView.builder(
-                      itemCount: snapshot.data!.length,
-                      itemBuilder: (context, index) {
-                        getModelName(snapshot.data![index].productCode);
-                        getProductSize(snapshot.data![index].productCode);
-                        int thisStoreCode = snapshot.data![index].storeCode;
-                        String thisStoreName = getStoreName(thisStoreCode);
+            Expanded(
+              child: ListView.builder(
+                itemCount: requsetList!.length,
+                itemBuilder: (context, index) {
+                  // getModelName(snapshot.data![index].productCode);
+                  // getProductSize(snapshot.data![index].productCode);
+                  int thisStoreCode = requsetList![index]['store_str_code'];
+                  String thisStoreName = getStoreName(thisStoreCode);
 
-                        return Column(
-                          children: [
-                            Text(thisStoreName),
-                            SizedBox(
-                              height: 100,
-                              width: 300,
-                              child: Card(
-                                child: Column(
-                                  children: [
-                                    Text("모델 명 : ${modelName}"),
-                                    Text(
-                                      "고객 ID : ${snapshot.data![index].userId}",
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text("사이즈 : ${modelSize.toString()}"),
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            left: 10,
-                                          ),
-                                          child: Text(
-                                            "갯수 : ${snapshot.data![index].count.toString()}",
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                  return Column(
+                    children: [
+                      Text(thisStoreName),
+                      SizedBox(
+                        height: 100,
+                        width: 300,
+                        child: Card(
+                          child: Column(
+                            children: [
+                              Text("모델 명 : ${requsetList[index]['name']}"),
+                              Text(
+                                "고객 ID : ${requsetList[index]['user_email']}",
                               ),
-                            ),
-                            snapshot.data![index].type == 0
-                                ? Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    TextButton(
-                                      onPressed: () async {
-                                        updateRtypeRejuct(
-                                          snapshot.data![index].num!,
-                                        );
-                                        var manageInsert = Management(
-                                          employeeCode: value,
-                                          productCode:
-                                              snapshot.data![index].productCode,
-                                          storeCode: storeCode,
-                                          type: -1,
-                                          date: DateTime.now().toString(),
-                                          count: snapshot.data![index].count,
-                                        );
-
-                                        await databaseHandler.insertManagement(
-                                          manageInsert,
-                                        );
-                                      },
-                                      child: Text('미승인'),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "사이즈 : ${requsetList[index]['size'].toString()}",
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 10),
+                                    child: Text(
+                                      "갯수 : ${requsetList[index]['req_count'].toString()}",
                                     ),
-                                    TextButton(
-                                      onPressed: () async {
-                                        updateRtype(snapshot.data![index].num!);
-                                        var manageInsert = Management(
-                                          employeeCode: value,
-                                          productCode:
-                                              snapshot.data![index].productCode,
-                                          storeCode: storeCode,
-                                          type: 1,
-                                          date: DateTime.now().toString(),
-                                          count: snapshot.data![index].count,
-                                        );
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      requsetList[index]['req_type'] == 0
+                          ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              TextButton(
+                                onPressed: () async {
+                                  // updateRtypeRejuct(snapshot.data![index].num!);
+                                  // var manageInsert = Management(
+                                  //   employeeCode: value,
+                                  //   productCode:
+                                  //       snapshot.data![index].productCode,
+                                  //   storeCode: storeCode,
+                                  //   type: -1,
+                                  //   date: DateTime.now().toString(),
+                                  //   count: snapshot.data![index].count,
+                                  // );
 
-                                        await databaseHandler.insertManagement(
-                                          manageInsert,
-                                        );
-                                      },
-                                      child: Text('승인'),
-                                    ),
-                                  ],
-                                )
-                                : snapshot.data![index].type == 1
-                                ? Text('승인')
-                                : Text('거부'),
-                          ],
-                        );
-                      },
-                    ),
+                                  // await databaseHandler.insertManagement(
+                                  //   manageInsert,
+                                  // );
+
+                                  await updateType(
+                                    -1,
+                                    requsetList[index]['req_num'],
+                                  );
+                                  getRequest(wheres);
+                                },
+                                child: Text('미승인'),
+                              ),
+                              TextButton(
+                                onPressed: () async {
+                                  // updateRtype(snapshot.data![index].num!);
+                                  // var manageInsert = Management(
+                                  //   employeeCode: value,
+                                  //   productCode:
+                                  //       snapshot.data![index].productCode,
+                                  //   storeCode: storeCode,
+                                  //   type: 1,
+                                  //   date: DateTime.now().toString(),
+                                  //   count: snapshot.data![index].count,
+                                  // );
+
+                                  // await databaseHandler.insertManagement(
+                                  //   manageInsert,
+                                  // );
+                                  await updateType(
+                                    1,
+                                    requsetList[index]['req_num'],
+                                  );
+                                  getRequest(wheres);
+                                },
+                                child: Text('승인'),
+                              ),
+                            ],
+                          )
+                          : requsetList[index]['req_type'] == 1
+                          ? Text('승인')
+                          : Text('거부'),
+                    ],
                   );
-                } else {
-                  return CircularProgressIndicator();
-                }
-              },
+                },
+              ),
             ),
           ],
         ),
@@ -358,51 +379,62 @@ class _HqRequestListState extends State<HqRequestList> {
     );
   }
 
-  getModelName(int productCode) async {
-    final productList = await databaseHandler.getProductName(productCode);
-    if (productList.isNotEmpty) {
-      modelName = productList[0].name;
-      setState(() {});
-    }
-    return modelName;
-  }
+  // getModelName(int productCode) async {
+  //   final productList = await databaseHandler.getProductName(productCode);
+  //   if (productList.isNotEmpty) {
+  //     modelName = productList[0].name;
+  //     setState(() {});
+  //   }
+  //   return modelName;
+  // }
 
-  getProductSize(int productCode) async {
-    final productList = await databaseHandler.getProductSize(productCode);
-    if (productList.isNotEmpty) {
-      modelSize = productList[0].size;
-      setState(() {});
-    }
-    return modelName;
-  }
+  // getProductSize(int productCode) async {
+  //   final productList = await databaseHandler.getProductSize(productCode);
+  //   if (productList.isNotEmpty) {
+  //     modelSize = productList[0].size;
+  //     setState(() {});
+  //   }
+  //   return modelName;
+  // }
 
-  updateRtype(int iNum) async {
-    int result = 0;
-
-    var rTypeUpdate = Request(
-      num: iNum,
-      userId: '',
-      productCode: 0,
-      storeCode: storeCode,
-      type: 1,
-      date: '',
-      count: 0,
+  updateType(int types, int num) async {
+    var request = http.MultipartRequest(
+      "POST",
+      Uri.parse('http://127.0.0.1:8000/request/update'),
     );
-    result = await databaseHandler.updateRequest(rTypeUpdate);
+    request.fields['req_type'] = types.toString();
+    request.fields['reason'] = types == 1 ? " " : "재고 부족";
+    request.fields['req_num'] = num.toString();
+    var res = await request.send();
   }
 
-  updateRtypeRejuct(int iNum) async {
-    int result = 0;
+  // updateRtype(int iNum) async {
+  //   int result = 0;
 
-    var rTypeUpdate = Request(
-      num: iNum,
-      userId: '',
-      productCode: 0,
-      storeCode: storeCode,
-      type: -1,
-      date: '',
-      count: 0,
-    );
-    result = await databaseHandler.updateRequest(rTypeUpdate);
-  }
+  //   var rTypeUpdate = Request(
+  //     num: iNum,
+  //     userId: '',
+  //     productCode: 0,
+  //     storeCode: storeCode,
+  //     type: 1,
+  //     date: '',
+  //     count: 0,
+  //   );
+  //   result = await databaseHandler.updateRequest(rTypeUpdate);
+  // }
+
+  // updateRtypeRejuct(int iNum) async {
+  //   int result = 0;
+
+  //   var rTypeUpdate = Request(
+  //     num: iNum,
+  //     userId: '',
+  //     productCode: 0,
+  //     storeCode: storeCode,
+  //     type: -1,
+  //     date: '',
+  //     count: 0,
+  //   );
+  //   result = await databaseHandler.updateRequest(rTypeUpdate);
+  // }
 }
