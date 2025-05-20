@@ -13,6 +13,18 @@ def connect():
         db="kicksy",
         charset="utf8",
     )
+@router.get("/")
+async def selectAll():
+
+    conn = connect()
+    curs = conn.cursor()
+
+    curs.execute("select * from user")
+    rows = curs.fetchall()
+    conn.close()
+
+    result = [{"email":row[0],"password":row[1],"phone":row[2],"address":row[3],"signupdata":row[4],"sex" : row[5]} for row in rows]
+    return {'results':result}
 
 
 
