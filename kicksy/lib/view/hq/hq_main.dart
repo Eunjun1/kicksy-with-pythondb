@@ -26,6 +26,7 @@ class _HqMainState extends State<HqMain> {
   List employeeList = [];
   List documentList = [];
   List orderyingList = [];
+  bool view = false;
   var value = Get.arguments[0] ?? "__";
   late String dropDownValue;
 
@@ -158,7 +159,7 @@ class _HqMainState extends State<HqMain> {
                                 onPressed: () {
                                   Get.to(HqRequestList(), arguments: [value]);
                                 },
-                                child: Text('주문내역',),
+                                child: Text('주문내역'),
                               ),
                             ),
                           ),
@@ -189,29 +190,35 @@ class _HqMainState extends State<HqMain> {
                                               width: 100,
                                             ),
                                             Padding(
-                                              padding: const EdgeInsets.only(left: 20.0),
+                                              padding: const EdgeInsets.only(
+                                                left: 20.0,
+                                              ),
                                               child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   SizedBox(
                                                     width: 200,
                                                     child: Text(
                                                       '모델명 : ${modelList[index]['name']}',
-                                                      overflow: TextOverflow.ellipsis,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
                                                     ),
                                                   ),
                                                   SizedBox(
                                                     width: 200,
                                                     child: Text(
                                                       '제조사 : ${modelList[index]['company']}',
-                                                      overflow: TextOverflow.ellipsis,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
                                                     ),
                                                   ),
                                                   SizedBox(
                                                     width: 200,
                                                     child: Text(
                                                       '가격 : ${modelList[index]['saleprice']}',
-                                                      overflow: TextOverflow.ellipsis,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
                                                     ),
                                                   ),
                                                 ],
@@ -263,9 +270,11 @@ class _HqMainState extends State<HqMain> {
                                       shrinkWrap: T,
                                       itemCount: orderyingList.length,
                                       itemBuilder: (context, index) {
-                                        getJSONDataDoc(
-                                          orderyingList[index]['doc_code'],
-                                        );
+                                        if (view == false) {
+                                          getJSONDataDoc(
+                                            orderyingList[index]['doc_code'],
+                                          );
+                                        }
                                         return documentList.isEmpty
                                             ? Center(
                                               child:
@@ -276,11 +285,9 @@ class _HqMainState extends State<HqMain> {
                                                   () => Get.to(
                                                     () => HqDocument(),
                                                     arguments: [
-                                                      documentList[index]['code'],
+                                                      documentList[index]['doc_code'],
                                                       value,
                                                     ],
-                                                  )!.then(
-                                                    (value) => reloadData(),
                                                   ),
                                               child: Card(
                                                 child: Row(
@@ -320,17 +327,12 @@ class _HqMainState extends State<HqMain> {
       floatingActionButton:
           dropDownValue == '제품 목록'
               ? IconButton(
-                onPressed:
-                    () =>
-                        Get.to(() => HqInsert())!.then((value) => reloadData()),
+                onPressed: () => Get.to(() => HqInsert()),
                 icon: Icon(Icons.add),
               )
               : IconButton(
                 onPressed:
-                    () => Get.to(
-                      HqInsertOrderDocument(),
-                      arguments: [value],
-                    )!.then((value) => reloadData()),
+                    () => Get.to(HqInsertOrderDocument(), arguments: [value]),
                 icon: Icon(Icons.add),
               ),
     );
@@ -344,10 +346,7 @@ class _HqMainState extends State<HqMain> {
     documentList.addAll(
       json.decode(utf8.decode(responseDoc.bodyBytes))['results'],
     );
-    setState(() {});
-  }
-
-  reloadData() async {
+    view = true;
     setState(() {});
   }
 }
