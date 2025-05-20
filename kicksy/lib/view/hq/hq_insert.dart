@@ -80,7 +80,7 @@ class _HqInsertState extends State<HqInsert> {
                           itemBuilder: (context, index) {
                             return Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Image.memory(images[index]),
+                              child: Image.file(File(imageFile!.path)),
                             );
                           },
                         ),
@@ -143,9 +143,8 @@ class _HqInsertState extends State<HqInsert> {
       return;
     } else {
       imageFile = XFile(pickedFile.path);
-      File imageFile1 = File(imageFile!.path);
-      Uint8List getImage = await imageFile1.readAsBytes();
-      images.add(getImage);
+
+      images.add(imageFile!.path);
       setState(() {});
     }
   }
@@ -180,9 +179,7 @@ class _HqInsertState extends State<HqInsert> {
       request.fields['img_num'] = i.toString();
 
       if (imageFile != null) {
-        request.files.add(
-          await http.MultipartFile.fromBytes('file', images[i]),
-        );
+        request.files.add(await http.MultipartFile.fromPath('file', images[i]));
       }
       var res = await request.send();
       if (res.statusCode == 200) {

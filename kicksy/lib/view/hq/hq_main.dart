@@ -297,17 +297,17 @@ class _HqMainState extends State<HqMain> {
                                                           .spaceAround,
                                                   children: [
                                                     Text(
-                                                      orderyingList[index]['num']
+                                                      orderyingList[index]['ody_num']
                                                           .toString(),
                                                     ),
                                                     Text(
-                                                      documentList[index]['title'],
+                                                      documentList[0]['title'],
                                                     ),
                                                     Text(
-                                                      documentList[index]['proposer'],
+                                                      documentList[0]['proposer'],
                                                     ),
                                                     Text(
-                                                      documentList[index]['date']
+                                                      documentList[0]['date']
                                                           .toString()
                                                           .substring(0, 10),
                                                     ),
