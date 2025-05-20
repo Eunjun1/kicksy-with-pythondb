@@ -14,20 +14,6 @@ def connect():
     )
 
 
-@router.get("/selectMax")
-async def selectMax():
-
-    conn = connect()
-    curs = conn.cursor()
-
-    curs.execute("select max(mod_code) from model")
-    rows = curs.fetchall()
-    conn.close()
-
-    result = [{"max":row[0]} for row in rows]
-    return {'results':result}
-
-
 @router.get("/selectAll")
 async def selectAll():
 

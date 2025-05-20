@@ -44,7 +44,7 @@ class _HqMainState extends State<HqMain> {
 
   getJSONDataModel() async {
     var responseModel = await http.get(
-      Uri.parse('http://127.0.0.1:8000/model/selectAll'),
+      Uri.parse('http://127.0.0.1:8000/model'),
     );
     modelList.clear();
     modelList.addAll(
