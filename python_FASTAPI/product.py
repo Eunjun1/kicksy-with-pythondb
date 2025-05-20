@@ -28,7 +28,6 @@ async def selectAll(model_code : int):
     result = [{"prod_code":row[0],"model_code":row[1],"size":row[2],"maxstock":row[3],"registration":row[4]} for row in rows]
     return {'results':result}
 
-
 @router.post('/insert')
 async def insert( model_code: int= Form(...), size: int=Form(...),maxstock: int= Form(...), registration:str=Form(...)):
     try:

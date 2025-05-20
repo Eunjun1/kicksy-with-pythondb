@@ -27,6 +27,18 @@ async def selectMax():
     result = [{"max":row[0]} for row in rows]
     return {'results':result}
 
+@router.get("/namecode={name}")
+async def selectCode(name : str):
+    conn = connect()
+    curs = conn.cursor()
+
+    curs.execute("select mod_code from model where name=%s", (name,))
+    rows = curs.fetchall()
+    conn.close()
+
+    result = [{"code":row[0]} for row in rows]
+    return {'results':result}
+
 
 @router.get("/selectAll")
 async def selectAll():

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kicksy/view/hq/hq_insert.dart';
+import 'package:kicksy/view/hq/hq_insert_order_document.dart';
 import 'package:kicksy/view/hq/hq_main.dart';
 import 'package:kicksy/view/hq/hq_order_query.dart';
 
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         fontFamily: 'Pretendard',
       ),
-      home: const HqOrderQuery(),
+      home: const Login(),
     );
   }
 }
