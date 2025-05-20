@@ -9,14 +9,14 @@ class HqRequestManagement extends StatefulWidget {
 }
 
 class _HqRequestManagementState extends State<HqRequestManagement> {
-
+  List data = [];
   DatabaseHandler handler = DatabaseHandler();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-
+      
       body: Center(
         child: FutureBuilder(
           future: handler.queryManagement(), 
